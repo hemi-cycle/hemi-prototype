@@ -20,7 +20,7 @@ const { label, style = 'neutral', type = 'tonal', leading = 'none', icon, densit
 
 const styleColors: Record<TagStyle, { text: string; tonalBg: string; border: string; fillBg: string; fillText: string }> = {
   neutral: { text: 'var(--color-text-default)', tonalBg: 'transparent', border: 'var(--color-bg-neutral-tertiary)', fillBg: 'var(--color-bg-neutral-inverse-primary)', fillText: 'var(--color-text-white)' },
-  brand: { text: 'var(--color-brand-darker)', tonalBg: 'var(--color-brand-lighter)', border: 'var(--color-brand-lighter)', fillBg: 'var(--color-brand-default)', fillText: 'white' },
+  brand: { text: 'var(--color-brand-darker)', tonalBg: 'var(--color-brand-lighter)', border: 'var(--color-brand-lighter)', fillBg: 'var(--color-brand-darker)', fillText: 'var(--color-brand-on-darker)' },
   danger: { text: 'var(--color-error-on-light)', tonalBg: 'var(--color-error-light)', border: 'var(--color-error-light)', fillBg: 'var(--color-error-on-light)', fillText: 'white' },
   success: { text: 'var(--color-success-on-light)', tonalBg: 'var(--color-success-light)', border: 'var(--color-success-light)', fillBg: 'var(--color-success-on-light)', fillText: 'white' },
   warning: {

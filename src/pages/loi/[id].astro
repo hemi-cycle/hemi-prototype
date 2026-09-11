@@ -1,61 +1,348 @@
 ---
+// Page détail loi — Figma node 2583:17955. Sections sans donnée/asset réel disponible
+// sont omises et documentées dans README.md (§ Roadmap) plutôt qu'inventées : pas de
+// photo de couverture, pas de répartition soutiens/opposants par parti, pas de vidéos
+// de discours, pas de visualisation hémicycle (US-8, déjà reportée).
 import MobileLayout from '../../layouts/MobileLayout.astro';
 import Icon from '../../components/Icon.astro';
+import IconButton from '../../components/IconButton.astro';
+import LawStateTag from '../../components/LawStateTag.astro';
+import Avatar from '../../components/Avatar.astro';
+import ArgumentsList from '../../components/ArgumentsList.astro';
+import KeyNumber from '../../components/KeyNumber.astro';
+import WikiLink from '../../components/WikiLink.astro';
+import Timeline from '../../components/Timeline.astro';
 import loi from '../../data/loi-duplomb-menonville.json';
 
 export function getStaticPaths() {
   return [{ params: { id: loi.id } }];
 }
+
+const base = import.meta.env.BASE_URL;
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+const vote = loi.votes[0];
 ---
 
 <MobileLayout title={loi.titre_usuel}>
-  <div class="page">
-    <a href={import.meta.env.BASE_URL} class="back-link">
-      <Icon name="arrow-left" size={16} />
-      À la une
+  <header class="hero">
+    <a href={base} class="hero__back">
+      <Icon name="arrow-left" size={20} />
+      Retour
     </a>
-    <h1 class="page__title">{loi.titre_usuel}</h1>
-    <p class="page__official">{loi.titre_officiel}</p>
-    <p class="page__summary">{loi.resume}</p>
+    <div class="hero__actions">
+      <IconButton ariaLabel="Partager" density="compact"><Icon name="share" size={20} /></IconButton>
+      <IconButton ariaLabel="Enregistrer" density="compact"><Icon name="bookmark-simple" size={20} /></IconButton>
+    </div>
+  </header>
+
+  <div class="page">
+    <section class="title-block">
+      <div class="title-block__eyebrow">
+        <span class="title-block__kind">Proposition de loi</span>
+        <LawStateTag statut={loi.statut_actuel} />
+      </div>
+      <h1 class="title-block__title">{loi.titre_usuel}</h1>
+      <p class="title-block__subtitle">{loi.sous_titre}</p>
+    </section>
+
+    <section class="section">
+      <h2 class="section__title">Déposé par</h2>
+      <div class="depositors">
+        {loi.depose_par.map((personne) => (
+          <div class="depositor">
+            <Avatar size={40} showBorder name={personne.nom} />
+            <div class="depositor__content">
+              <p class="depositor__name">{personne.nom}</p>
+              <p class="depositor__role">{personne.fonction} · {personne.parti}</p>
+            </div>
+            <a href={personne.source} target="_blank" rel="noopener noreferrer" class="depositor__link" aria-label={`Fiche de ${personne.nom} sur senat.fr`}>
+              <Icon name="arrow-up-right" size={16} />
+            </a>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section__title">En bref</h2>
+      <details class="summary">
+        <summary class="summary__toggle">
+          <p class="summary__text">{loi.description}</p>
+          <span class="summary__cta">Lire la suite</span>
+        </summary>
+      </details>
+    </section>
+
+    <ArgumentsList pour={loi.arguments_pour} contre={loi.arguments_contre} />
+
+    <section class="section">
+      <h2 class="section__title">Résultat du vote</h2>
+      <p class="vote__meta">{vote.type} · {vote.chambre === 'assemblee_nationale' ? 'Assemblée nationale' : vote.chambre} · {formatDate(vote.date)}</p>
+      <div class="vote__numbers">
+        <KeyNumber value={vote.pour} label="Pour" state={vote.pour > vote.contre ? 'success' : 'default'} />
+        <KeyNumber value={vote.contre} label="Contre" state={vote.contre > vote.pour ? 'failure' : 'default'} />
+        <KeyNumber value={vote.abstention} label="Abstentions" />
+      </div>
+      <a href={vote.source} target="_blank" rel="noopener noreferrer" class="vote__source">
+        Voir le détail du vote
+        <Icon name="arrow-up-right" size={14} />
+      </a>
+      <WikiLink question="Combien faut-il de votes pour qu'une loi passe ?" href={`${base}/antiseche`} />
+    </section>
+
+    <section class="section">
+      <h2 class="section__title">On rembobine !</h2>
+      <Timeline etapes={loi.etapes} />
+    </section>
+
+    <section class="section">
+      <h2 class="section__title">Textes officiels</h2>
+      <div class="sources">
+        {loi.sources.map((source) => (
+          <a href={source.url} target="_blank" rel="noopener noreferrer" class="source-item">
+            <Icon name="file-text" size={24} color="var(--color-text-dark-grey)" />
+            <span class="source-item__label">{source.label}</span>
+            <Icon name="arrow-up-right" size={16} color="var(--color-text-dark-grey)" />
+          </a>
+        ))}
+      </div>
+    </section>
   </div>
 </MobileLayout>
 
 <style>
-  .page {
-    padding: var(--space-xs);
+  .hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-2xs) var(--space-xs);
+    background: var(--color-bg-neutral-secondary);
   }
 
-  .back-link {
+  .hero__back {
     display: inline-flex;
     align-items: center;
-    gap: var(--space-4xs);
+    gap: var(--space-3xs);
+    padding: var(--space-2xs) var(--space-xs) var(--space-2xs) var(--space-2xs);
+    border-radius: var(--radius-small);
+    background: var(--color-bg-neutral-secondary);
+    box-shadow: var(--elevation-2);
     font-family: var(--font-accent);
-    font-size: var(--text-body-small);
-    color: var(--color-text-brand);
+    font-size: var(--text-body-xsmall);
+    font-weight: 500;
+    color: var(--color-text-default);
     text-decoration: none;
-    margin-bottom: var(--space-sm);
   }
 
-  .page__title {
+  .hero__actions {
+    display: flex;
+    gap: var(--space-4xs);
+  }
+
+  .page {
+    padding: var(--space-xs);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+  }
+
+  .title-block {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+  }
+
+  .title-block__eyebrow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2xs);
+  }
+
+  .title-block__kind {
+    font-family: var(--font-accent);
+    font-size: var(--text-body-small);
+    font-weight: 500;
+    color: var(--color-text-default);
+  }
+
+  .title-block__title {
     font-family: var(--font-heading);
     font-size: var(--text-h1);
     font-weight: 400;
     color: var(--color-text-default);
-    margin: 0 0 var(--space-3xs);
+    margin: 0;
   }
 
-  .page__official {
-    font-family: var(--font-body);
-    font-size: var(--text-body-small);
-    color: var(--color-text-light-grey);
-    margin: 0 0 var(--space-md);
-  }
-
-  .page__summary {
+  .title-block__subtitle {
     font-family: var(--font-body);
     font-size: var(--text-body-medium);
     color: var(--color-text-dark-grey);
-    line-height: 1.5;
     margin: 0;
+  }
+
+  .section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+  }
+
+  .section__title {
+    font-family: var(--font-heading);
+    font-size: var(--text-h3);
+    font-weight: 400;
+    color: var(--color-text-default);
+    margin: 0;
+  }
+
+  .depositors {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .depositor {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3xs);
+    min-height: 48px;
+    padding: var(--space-2xs) 0;
+    border-bottom: 0.5px solid var(--color-bg-neutral-tertiary);
+  }
+
+  .depositor:last-child {
+    border-bottom: none;
+  }
+
+  .depositor__content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .depositor__name {
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-text-default);
+    margin: 0;
+  }
+
+  .depositor__role {
+    font-family: var(--font-body);
+    font-size: 12px;
+    color: var(--color-text-dark-grey);
+    margin: 0;
+  }
+
+  .depositor__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-full);
+    color: var(--color-text-brand);
+    flex-shrink: 0;
+  }
+
+  .summary {
+    background: var(--color-bg-neutral-primary);
+    border-radius: var(--radius-small);
+    padding: var(--space-xs);
+  }
+
+  .summary__toggle {
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .summary__toggle::-webkit-details-marker {
+    display: none;
+  }
+
+  .summary__text {
+    font-family: var(--font-body);
+    font-size: var(--text-body-small);
+    line-height: 20px;
+    color: var(--color-text-dark-grey);
+    margin: 0 0 var(--space-2xs);
+  }
+
+  .summary:not([open]) .summary__text {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .summary__cta {
+    font-family: var(--font-accent);
+    font-size: var(--text-body-small);
+    font-weight: 500;
+    color: var(--color-text-brand);
+  }
+
+  .summary[open] .summary__cta {
+    display: none;
+  }
+
+  .vote__meta {
+    font-family: var(--font-body);
+    font-size: var(--text-body-xsmall);
+    color: var(--color-text-dark-grey);
+    margin: 0;
+  }
+
+  .vote__numbers {
+    display: flex;
+    gap: 1px;
+    background: var(--color-bg-neutral-tertiary);
+    border-radius: var(--radius-extra-small);
+    overflow: hidden;
+  }
+
+  .vote__source {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-4xs);
+    font-family: var(--font-accent);
+    font-size: var(--text-body-xsmall);
+    font-weight: 500;
+    color: var(--color-text-brand);
+    text-decoration: none;
+  }
+
+  .sources {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .source-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3xs);
+    min-height: 48px;
+    padding: var(--space-2xs) 0;
+    border-bottom: 0.5px solid var(--color-bg-neutral-tertiary);
+    text-decoration: none;
+  }
+
+  .source-item:last-child {
+    border-bottom: none;
+  }
+
+  .source-item__label {
+    flex: 1;
+    min-width: 0;
+    font-family: var(--font-body);
+    font-size: var(--text-body-small);
+    font-weight: 500;
+    color: var(--color-text-default);
   }
 </style>

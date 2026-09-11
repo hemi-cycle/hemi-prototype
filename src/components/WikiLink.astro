@@ -1,0 +1,40 @@
+---
+// Figma "Wiki-link" (node 2587:5596) — lien contextuel vers l'anti-sèche (US-9).
+// ⚠️ La page anti-sèche/glossaire cible n'existe pas encore (US-10) : le lien par
+// défaut pointe vers une page qui n'est pas encore construite, voir roadmap.
+import Icon from './Icon.astro';
+
+interface Props {
+  question: string;
+  href: string;
+}
+
+const { question, href } = Astro.props;
+---
+
+<a href={href} class="wiki-link">
+  <Icon name="book-open" size={24} color="var(--color-text-white)" />
+  <span class="wiki-link__label">{question}</span>
+  <Icon name="arrow-up-right" size={24} color="var(--color-text-white)" />
+</a>
+
+<style>
+  .wiki-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3xs);
+    padding: var(--space-xs) var(--space-3xs);
+    border-radius: var(--radius-small);
+    background: linear-gradient(135deg, var(--color-brand-default), var(--color-brand-darker));
+    text-decoration: none;
+  }
+
+  .wiki-link__label {
+    flex: 1;
+    min-width: 0;
+    font-family: var(--font-body);
+    font-size: var(--text-body-medium);
+    font-weight: 500;
+    color: var(--color-text-white);
+  }
+</style>

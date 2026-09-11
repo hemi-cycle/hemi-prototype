@@ -1,0 +1,142 @@
+---
+// "On rembobine !" — frise du parcours législatif (Figma node 2583:18406, US-6 backlog).
+// Anatomie vérifiée sur le 1er step (node 2583:18437) : ligne verticale + point
+// (coché quand statut="fait") + carte (tag date + libellé + lien source).
+// Le Figma montre aussi une description longue par étape et un point "à venir"
+// (cercle vide, pas de coche) — notre JSON n'a que `libelle` (pas de paragraphe),
+// et toutes les étapes connues sont `statut="fait"` ; le rendu gère déjà les deux
+// cas mais le style "à venir" reste non vérifié faute d'exemple réel.
+import Tag from './Tag.astro';
+import Icon from './Icon.astro';
+
+interface Etape {
+  date: string;
+  chambre: string;
+  libelle: string;
+  statut: string;
+  source?: string;
+}
+
+interface Props {
+  etapes: Etape[];
+}
+
+const { etapes } = Astro.props;
+
+const chambreLabels: Record<string, string> = {
+  senat: 'Sénat',
+  assemblee_nationale: 'Assemblée nationale',
+  cmp: 'Commission mixte paritaire',
+  conseil_constitutionnel: 'Conseil constitutionnel',
+  presidence: 'Présidence de la République',
+};
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+---
+
+<div class="timeline">
+  {etapes.map((etape, index) => (
+    <div class="timeline__item">
+      <div class="timeline__marker">
+        <span class={`timeline__dot ${etape.statut === 'fait' ? 'timeline__dot--done' : ''}`}>
+          {etape.statut === 'fait' && <Icon name="check" size={12} color="white" />}
+        </span>
+        {index < etapes.length - 1 && <span class="timeline__line"></span>}
+      </div>
+      <div class="timeline__content">
+        <Tag label={formatDate(etape.date)} style="brand" type="fill" />
+        <p class="timeline__title">{etape.libelle}</p>
+        {chambreLabels[etape.chambre] && <p class="timeline__chambre">{chambreLabels[etape.chambre]}</p>}
+        {etape.source && (
+          <a href={etape.source} target="_blank" rel="noopener noreferrer" class="timeline__source">
+            Voir la source
+            <Icon name="arrow-up-right" size={14} />
+          </a>
+        )}
+      </div>
+    </div>
+  ))}
+</div>
+
+<style>
+  .timeline {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .timeline__item {
+    display: flex;
+    gap: var(--space-3xs);
+  }
+
+  .timeline__marker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+    padding-top: var(--space-xs);
+  }
+
+  .timeline__dot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: var(--radius-full);
+    border: 2px solid var(--color-brand-darker);
+    background: var(--color-bg-neutral-primary);
+    flex-shrink: 0;
+  }
+
+  .timeline__dot--done {
+    background: var(--color-brand-darker);
+  }
+
+  .timeline__line {
+    width: 2px;
+    flex: 1;
+    background: var(--color-brand-darker);
+    margin: var(--space-4xs) 0;
+  }
+
+  .timeline__content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3xs);
+    flex: 1;
+    min-width: 0;
+    padding: var(--space-xs) var(--space-xs) var(--space-sm) var(--space-2xs);
+    background: var(--color-bg-neutral-primary);
+    border-radius: var(--radius-small);
+  }
+
+  .timeline__title {
+    font-family: var(--font-heading);
+    font-size: var(--text-body-small);
+    font-weight: 400;
+    color: var(--color-text-default);
+    margin: 0;
+  }
+
+  .timeline__chambre {
+    font-family: var(--font-body);
+    font-size: var(--text-body-xsmall);
+    color: var(--color-text-dark-grey);
+    margin: calc(var(--space-4xs) * -1) 0 0;
+  }
+
+  .timeline__source {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-4xs);
+    font-family: var(--font-accent);
+    font-size: var(--text-body-xsmall);
+    font-weight: 500;
+    color: var(--color-text-brand);
+    text-decoration: none;
+  }
+</style>

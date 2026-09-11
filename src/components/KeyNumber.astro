@@ -1,0 +1,70 @@
+---
+// Figma "Key-numbers" — vérifié via les instances du votes-wrapper du Law-card
+// (node 2597:23663) et de la section vote de la page détail (node 2583:18130).
+// Seule la taille "compact" (55px) a été observée dans le fichier ; "comfortable"
+// est une extrapolation raisonnable, à confirmer visuellement si un jour utilisée.
+export type KeyNumberState = 'default' | 'success' | 'failure';
+export type KeyNumberSize = 'compact' | 'comfortable';
+
+interface Props {
+  value: number | string;
+  label: string;
+  state?: KeyNumberState;
+  size?: KeyNumberSize;
+}
+
+const { value, label, state = 'default', size = 'compact' } = Astro.props;
+
+const stateColor: Record<KeyNumberState, string> = {
+  default: 'var(--color-text-default)',
+  success: 'var(--color-success-on-light)',
+  failure: 'var(--color-error-on-light)',
+};
+---
+
+<div class={`key-number key-number--${size}`}>
+  <p class="key-number__value" style={`color:${stateColor[state]}`}>{value}</p>
+  <p class="key-number__label">{label}</p>
+</div>
+
+<style>
+  .key-number {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    border-radius: var(--radius-extra-small);
+    background: var(--color-bg-neutral-primary);
+  }
+
+  .key-number--compact {
+    padding: var(--space-4xs) var(--space-xs) var(--space-3xs);
+  }
+
+  .key-number--compact .key-number__value {
+    font-size: var(--text-body-small);
+  }
+
+  .key-number--comfortable {
+    padding: var(--space-2xs) var(--space-sm) var(--space-2xs);
+  }
+
+  .key-number--comfortable .key-number__value {
+    font-size: var(--text-h1);
+  }
+
+  .key-number__value {
+    font-family: var(--font-heading);
+    font-weight: 400;
+    margin: 0;
+    line-height: normal;
+  }
+
+  .key-number__label {
+    font-family: var(--font-body);
+    font-size: var(--text-body-xsmall);
+    color: var(--color-text-default);
+    text-transform: uppercase;
+    margin: 0;
+  }
+</style>
