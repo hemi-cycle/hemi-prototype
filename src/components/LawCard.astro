@@ -1,24 +1,58 @@
 ---
+// Reproduit Law-card/Master (Figma node 2597:23663).
+// Tags et avatar sont statiques pour l'instant — à rendre dynamiques/data-driven plus tard.
 interface Props {
   id: string;
   titre: string;
   sousTitre: string;
   statut: string;
+  deposantNom: string;
+  deposantRole: string;
 }
 
-const { id, titre, sousTitre, statut } = Astro.props;
+const { id, titre, sousTitre, statut, deposantNom, deposantRole } = Astro.props;
 
-const statutLabels: Record<string, string> = {
-  promulguee: 'Promulguée',
-  en_cours: 'En cours d’examen',
-  rejetee: 'Rejetée',
+const statutConfig: Record<string, { label: string; color: string; bg: string }> = {
+  promulguee: { label: 'Promulguée', color: 'var(--color-success-on-light)', bg: 'var(--color-success-light)' },
+  en_cours: { label: 'En débat', color: 'var(--color-warning-on-light)', bg: 'color-mix(in srgb, var(--color-warning-on-light) 15%, white)' },
+  rejetee: { label: 'Rejetée', color: 'var(--color-error-on-light)', bg: 'var(--color-error-light)' },
 };
+const state = statutConfig[statut] ?? statutConfig.en_cours;
+
+const initials = deposantNom
+  .split(' ')
+  .map((part) => part[0])
+  .join('')
+  .slice(0, 2)
+  .toUpperCase();
+
+const tags = ['🌾 Agriculture', '🌳 Écologie'];
 ---
 
 <a href={`${import.meta.env.BASE_URL}/loi/${id}`} class="law-card">
-  <span class="law-card__status">{statutLabels[statut] ?? statut}</span>
-  <h2 class="law-card__title">{titre}</h2>
-  <p class="law-card__subtitle">{sousTitre}</p>
+  <div class="header">
+    <div class="title-block">
+      <h2 class="title">{titre}</h2>
+      <p class="subtitle">{sousTitre}</p>
+    </div>
+    <div class="theme-wrapper">
+      <span class="state-pill" style={`color:${state.color};background:${state.bg}`}>
+        <span class="state-dot" style={`background:${state.color}`}></span>
+        {state.label}
+      </span>
+      {tags.map((tag) => <span class="tag">{tag}</span>)}
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="list-item">
+    <span class="avatar" aria-hidden="true">{initials}</span>
+    <div class="list-item__content">
+      <p class="list-item__label">{deposantNom}</p>
+      <p class="list-item__supporting">{deposantRole}</p>
+    </div>
+  </div>
 </a>
 
 <style>
@@ -26,37 +60,135 @@ const statutLabels: Record<string, string> = {
     display: block;
     text-decoration: none;
     color: inherit;
-    background: white;
-    border-radius: var(--radius-large);
-    padding: var(--space-sm);
-    box-shadow: var(--elevation-2);
+    background: var(--color-bg-neutral-primary);
+    border: 0.5px solid var(--color-bg-neutral-tertiary);
+    border-radius: var(--radius-small);
+    box-shadow: var(--elevation-3);
+    overflow: hidden;
   }
 
-  .law-card__status {
-    display: inline-block;
-    font-family: var(--font-accent);
-    font-size: var(--text-body-xsmall);
-    font-weight: 500;
-    color: var(--color-success-on-light);
-    background: var(--color-success-light);
-    border-radius: var(--radius-full);
-    padding: var(--space-4xs) var(--space-2xs);
-    margin-bottom: var(--space-2xs);
+  .header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+    padding: var(--space-xs) var(--space-xs) var(--space-3xs);
   }
 
-  .law-card__title {
+  .title-block {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4xs);
+  }
+
+  .title {
     font-family: var(--font-heading);
-    font-size: var(--text-h3);
+    font-size: var(--text-body-small);
     font-weight: 400;
-    margin: 0 0 var(--space-3xs);
+    color: var(--color-text-default);
+    margin: 0;
+  }
+
+  .subtitle {
+    font-family: var(--font-body);
+    font-size: var(--text-body-small);
+    line-height: 20px;
+    color: var(--color-text-dark-grey);
+    margin: 0;
+  }
+
+  .theme-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4xs);
+  }
+
+  .state-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-4xs);
+    height: 28px;
+    padding: var(--space-4xs) var(--space-3xs);
+    border-radius: var(--radius-full);
+    font-family: var(--font-body);
+    font-size: var(--text-body-xsmall);
+    font-weight: 400;
+  }
+
+  .state-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: var(--radius-full);
+  }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    height: 28px;
+    padding: var(--space-4xs) var(--space-3xs);
+    border: 0.5px solid var(--color-bg-neutral-tertiary);
+    border-radius: var(--radius-full);
+    font-family: var(--font-body);
+    font-size: var(--text-body-xsmall);
+    font-weight: 400;
     color: var(--color-text-default);
   }
 
-  .law-card__subtitle {
+  .divider {
+    height: 0.5px;
+    background: var(--color-bg-neutral-tertiary);
+  }
+
+  .list-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3xs);
+    min-height: 48px;
+    padding: var(--space-2xs) var(--space-xs);
+  }
+
+  .avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-full);
+    background: var(--color-brand-lighter);
+    color: var(--color-brand-darker);
+    font-family: var(--font-accent);
+    font-size: var(--text-body-xsmall);
+    font-weight: 500;
+  }
+
+  .list-item__content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .list-item__label {
     font-family: var(--font-body);
-    font-size: var(--text-body-small);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 18px;
+    color: var(--color-text-default);
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .list-item__supporting {
+    font-family: var(--font-body);
+    font-size: 12px;
+    line-height: 16px;
     color: var(--color-text-dark-grey);
     margin: 0;
-    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 </style>

@@ -2,13 +2,22 @@
 import MobileLayout from '../layouts/MobileLayout.astro';
 import LawCard from '../components/LawCard.astro';
 import loi from '../data/loi-duplomb-menonville.json';
+
+const premierDeposant = loi.depose_par[0];
 ---
 
 <MobileLayout title="À la une">
   <div class="page">
     <h1 class="page__title">À la une</h1>
     <div class="law-list">
-      <LawCard id={loi.id} titre={loi.titre_usuel} sousTitre={loi.sous_titre} statut={loi.statut_actuel} />
+      <LawCard
+        id={loi.id}
+        titre={loi.titre_usuel}
+        sousTitre={loi.sous_titre}
+        statut={loi.statut_actuel}
+        deposantNom={premierDeposant.nom}
+        deposantRole={`${premierDeposant.fonction} · ${premierDeposant.parti}`}
+      />
     </div>
   </div>
 </MobileLayout>
