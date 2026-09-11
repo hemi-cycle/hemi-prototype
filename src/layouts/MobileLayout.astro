@@ -1,0 +1,90 @@
+---
+import '../styles/tokens.css';
+
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+const currentPath = Astro.url.pathname;
+
+function isActive(path: string) {
+  const base = import.meta.env.BASE_URL;
+  return currentPath === `${base}${path}`.replace(/\/{2,}/g, '/');
+}
+---
+
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>{title} — Hémi</title>
+  </head>
+  <body>
+    <div class="app-frame">
+      <main class="app-content">
+        <slot />
+      </main>
+      <nav class="bottom-nav" aria-label="Navigation principale">
+        <a href={import.meta.env.BASE_URL} class:list={['nav-item', { active: isActive('') || isActive('/') }]}>
+          À la une
+        </a>
+        <a href={`${import.meta.env.BASE_URL}/antiseche`} class:list={['nav-item', { active: isActive('/antiseche') }]}>
+          Anti-sèche
+        </a>
+      </nav>
+    </div>
+
+    <style>
+      :global(html, body) {
+        margin: 0;
+        padding: 0;
+        background: var(--color-bg-neutral-secondary);
+        font-family: var(--font-body);
+        color: var(--color-text-default);
+      }
+
+      .app-frame {
+        max-width: 430px;
+        min-height: 100vh;
+        margin: 0 auto;
+        background: var(--color-bg-neutral-primary);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .app-content {
+        flex: 1;
+        padding-bottom: var(--space-2xl);
+      }
+
+      .bottom-nav {
+        position: sticky;
+        bottom: 0;
+        display: flex;
+        border-top: 1px solid var(--color-border-neutral-secondary);
+        background: var(--color-bg-neutral-primary);
+        padding: var(--space-2xs) var(--space-xs);
+        gap: var(--space-2xs);
+      }
+
+      .nav-item {
+        flex: 1;
+        text-align: center;
+        padding: var(--space-2xs);
+        border-radius: var(--radius-small);
+        font-family: var(--font-accent);
+        font-size: var(--text-body-small);
+        font-weight: 500;
+        text-decoration: none;
+        color: var(--color-text-dark-grey);
+      }
+
+      .nav-item.active {
+        color: var(--color-text-brand);
+        background: var(--color-bg-neutral-secondary);
+      }
+    </style>
+  </body>
+</html>

@@ -1,0 +1,55 @@
+---
+import MobileLayout from '../../layouts/MobileLayout.astro';
+import loi from '../../data/loi-duplomb-menonville.json';
+
+export function getStaticPaths() {
+  return [{ params: { id: loi.id } }];
+}
+---
+
+<MobileLayout title={loi.titre_usuel}>
+  <div class="page">
+    <a href={import.meta.env.BASE_URL} class="back-link">&larr; À la une</a>
+    <h1 class="page__title">{loi.titre_usuel}</h1>
+    <p class="page__official">{loi.titre_officiel}</p>
+    <p class="page__summary">{loi.resume}</p>
+  </div>
+</MobileLayout>
+
+<style>
+  .page {
+    padding: var(--space-xs);
+  }
+
+  .back-link {
+    display: inline-block;
+    font-family: var(--font-accent);
+    font-size: var(--text-body-small);
+    color: var(--color-text-brand);
+    text-decoration: none;
+    margin-bottom: var(--space-sm);
+  }
+
+  .page__title {
+    font-family: var(--font-heading);
+    font-size: var(--text-h1);
+    font-weight: 400;
+    color: var(--color-text-default);
+    margin: 0 0 var(--space-3xs);
+  }
+
+  .page__official {
+    font-family: var(--font-body);
+    font-size: var(--text-body-small);
+    color: var(--color-text-light-grey);
+    margin: 0 0 var(--space-md);
+  }
+
+  .page__summary {
+    font-family: var(--font-body);
+    font-size: var(--text-body-medium);
+    color: var(--color-text-dark-grey);
+    line-height: 1.5;
+    margin: 0;
+  }
+</style>

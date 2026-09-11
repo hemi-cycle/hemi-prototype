@@ -1,0 +1,68 @@
+/* Design tokens — extraits du design system Hémi (Figma, DS Mar 2025) */
+:root {
+  /* Couleurs — marque */
+  --color-brand-default: #3d2aff;
+  --color-brand-darker: #241d86;
+  --color-brand-lighter: #99a3f5;
+  --color-brand-on-darker: #cad1fb;
+
+  /* Couleurs — neutre */
+  --color-bg-neutral-primary: #f0f1fa;
+  --color-bg-neutral-secondary: #e6e7f0;
+  --color-bg-neutral-tertiary: #dedfe7;
+  --color-bg-neutral-inverse-primary: #242526;
+  --color-bg-neutral-inverse-secondary: #3b3b3d;
+
+  --color-text-default: #242526;
+  --color-text-dark-grey: #4c4c4f;
+  --color-text-light-grey: #a9aab0;
+  --color-text-white: #e6e7f0;
+  --color-text-brand: #3d2aff;
+
+  --color-border-neutral-primary: #3b3b3d;
+  --color-border-neutral-secondary: #c4c5cc;
+
+  /* Couleurs — état */
+  --color-success-on-light: #1c9d4e;
+  --color-success-light: #c8e4da;
+  --color-error-on-light: #ed1811;
+  --color-error-light: #ffc2c0;
+  --color-warning-on-light: #d64f00;
+
+  /* Typographie */
+  --font-heading: 'Boldonse', serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-accent: 'DM Sans', sans-serif;
+
+  --text-h1: 24px;
+  --text-h2: 20px;
+  --text-h3: 18px;
+  --text-body-large: 18px;
+  --text-body-medium: 16px;
+  --text-body-small: 14px;
+  --text-body-xsmall: 12px;
+
+  /* Espacements */
+  --space-4xs: 4px;
+  --space-3xs: 8px;
+  --space-2xs: 12px;
+  --space-xs: 16px;
+  --space-sm: 20px;
+  --space-md: 24px;
+  --space-lg: 32px;
+  --space-xl: 40px;
+  --space-2xl: 48px;
+
+  /* Rayons */
+  --radius-none: 0;
+  --radius-extra-small: 4px;
+  --radius-small: 8px;
+  --radius-medium: 12px;
+  --radius-large: 16px;
+  --radius-extra-large: 28px;
+  --radius-full: 1000px;
+
+  /* Élévation */
+  --elevation-2: 0 0 8px rgba(31, 31, 31, 0.1), 0 0 1px rgba(31, 31, 31, 0.1);
+  --elevation-3: 0 0 1px rgba(31, 31, 31, 0.3), 0 8px 12px rgba(31, 31, 31, 0.1);
+}

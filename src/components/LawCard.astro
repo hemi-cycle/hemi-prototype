@@ -1,0 +1,62 @@
+---
+interface Props {
+  id: string;
+  titre: string;
+  sousTitre: string;
+  statut: string;
+}
+
+const { id, titre, sousTitre, statut } = Astro.props;
+
+const statutLabels: Record<string, string> = {
+  promulguee: 'Promulguée',
+  en_cours: 'En cours d’examen',
+  rejetee: 'Rejetée',
+};
+---
+
+<a href={`${import.meta.env.BASE_URL}/loi/${id}`} class="law-card">
+  <span class="law-card__status">{statutLabels[statut] ?? statut}</span>
+  <h2 class="law-card__title">{titre}</h2>
+  <p class="law-card__subtitle">{sousTitre}</p>
+</a>
+
+<style>
+  .law-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    background: white;
+    border-radius: var(--radius-large);
+    padding: var(--space-sm);
+    box-shadow: var(--elevation-2);
+  }
+
+  .law-card__status {
+    display: inline-block;
+    font-family: var(--font-accent);
+    font-size: var(--text-body-xsmall);
+    font-weight: 500;
+    color: var(--color-success-on-light);
+    background: var(--color-success-light);
+    border-radius: var(--radius-full);
+    padding: var(--space-4xs) var(--space-2xs);
+    margin-bottom: var(--space-2xs);
+  }
+
+  .law-card__title {
+    font-family: var(--font-heading);
+    font-size: var(--text-h3);
+    font-weight: 400;
+    margin: 0 0 var(--space-3xs);
+    color: var(--color-text-default);
+  }
+
+  .law-card__subtitle {
+    font-family: var(--font-body);
+    font-size: var(--text-body-small);
+    color: var(--color-text-dark-grey);
+    margin: 0;
+    line-height: 1.4;
+  }
+</style>
