@@ -1,6 +1,10 @@
 ---
-// Reproduit Law-card/Master (Figma node 2597:23663).
-// Tags et avatar sont statiques pour l'instant — à rendre dynamiques/data-driven plus tard.
+// Reproduit Law-card/Master (Figma node 2597:23663), composé à partir des primitives DS.
+// Les tags thématiques restent statiques pour l'instant — à rendre data-driven plus tard.
+import Tag from './Tag.astro';
+import LawStateTag from './LawStateTag.astro';
+import Avatar from './Avatar.astro';
+
 interface Props {
   id: string;
   titre: string;
@@ -12,20 +16,6 @@ interface Props {
 
 const { id, titre, sousTitre, statut, deposantNom, deposantRole } = Astro.props;
 
-const statutConfig: Record<string, { label: string; color: string; bg: string }> = {
-  promulguee: { label: 'Promulguée', color: 'var(--color-success-on-light)', bg: 'var(--color-success-light)' },
-  en_cours: { label: 'En débat', color: 'var(--color-warning-on-light)', bg: 'color-mix(in srgb, var(--color-warning-on-light) 15%, white)' },
-  rejetee: { label: 'Rejetée', color: 'var(--color-error-on-light)', bg: 'var(--color-error-light)' },
-};
-const state = statutConfig[statut] ?? statutConfig.en_cours;
-
-const initials = deposantNom
-  .split(' ')
-  .map((part) => part[0])
-  .join('')
-  .slice(0, 2)
-  .toUpperCase();
-
 const tags = ['🌾 Agriculture', '🌳 Écologie'];
 ---
 
@@ -36,18 +26,15 @@ const tags = ['🌾 Agriculture', '🌳 Écologie'];
       <p class="subtitle">{sousTitre}</p>
     </div>
     <div class="theme-wrapper">
-      <span class="state-pill" style={`color:${state.color};background:${state.bg}`}>
-        <span class="state-dot" style={`background:${state.color}`}></span>
-        {state.label}
-      </span>
-      {tags.map((tag) => <span class="tag">{tag}</span>)}
+      <LawStateTag statut={statut} />
+      {tags.map((tag) => <Tag label={tag} />)}
     </div>
   </div>
 
   <div class="divider"></div>
 
   <div class="list-item">
-    <span class="avatar" aria-hidden="true">{initials}</span>
+    <Avatar size={40} showBorder name={deposantNom} />
     <div class="list-item__content">
       <p class="list-item__label">{deposantNom}</p>
       <p class="list-item__supporting">{deposantRole}</p>
@@ -102,37 +89,6 @@ const tags = ['🌾 Agriculture', '🌳 Écologie'];
     gap: var(--space-4xs);
   }
 
-  .state-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-4xs);
-    height: 28px;
-    padding: var(--space-4xs) var(--space-3xs);
-    border-radius: var(--radius-full);
-    font-family: var(--font-body);
-    font-size: var(--text-body-xsmall);
-    font-weight: 400;
-  }
-
-  .state-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: var(--radius-full);
-  }
-
-  .tag {
-    display: inline-flex;
-    align-items: center;
-    height: 28px;
-    padding: var(--space-4xs) var(--space-3xs);
-    border: 0.5px solid var(--color-bg-neutral-tertiary);
-    border-radius: var(--radius-full);
-    font-family: var(--font-body);
-    font-size: var(--text-body-xsmall);
-    font-weight: 400;
-    color: var(--color-text-default);
-  }
-
   .divider {
     height: 0.5px;
     background: var(--color-bg-neutral-tertiary);
@@ -144,21 +100,6 @@ const tags = ['🌾 Agriculture', '🌳 Écologie'];
     gap: var(--space-3xs);
     min-height: 48px;
     padding: var(--space-2xs) var(--space-xs);
-  }
-
-  .avatar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    width: 40px;
-    height: 40px;
-    border-radius: var(--radius-full);
-    background: var(--color-brand-lighter);
-    color: var(--color-brand-darker);
-    font-family: var(--font-accent);
-    font-size: var(--text-body-xsmall);
-    font-weight: 500;
   }
 
   .list-item__content {

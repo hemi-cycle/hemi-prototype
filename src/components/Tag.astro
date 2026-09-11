@@ -1,0 +1,71 @@
+---
+// Composant générique Tag (Figma "Tag"), vérifié via les instances du Law-card (node 2597:23663).
+export type TagStyle = 'neutral' | 'brand' | 'danger' | 'success' | 'warning';
+export type TagType = 'tonal' | 'fill';
+export type TagLeading = 'dot' | 'none';
+export type TagDensity = 'compact' | 'comfortable';
+
+interface Props {
+  label: string;
+  style?: TagStyle;
+  type?: TagType;
+  leading?: TagLeading;
+  density?: TagDensity;
+}
+
+const { label, style = 'neutral', type = 'tonal', leading = 'none', density = 'compact' } = Astro.props;
+
+const styleColors: Record<TagStyle, { text: string; tonalBg: string; border: string; fillBg: string; fillText: string }> = {
+  neutral: { text: 'var(--color-text-default)', tonalBg: 'transparent', border: 'var(--color-bg-neutral-tertiary)', fillBg: 'var(--color-bg-neutral-inverse-primary)', fillText: 'var(--color-text-white)' },
+  brand: { text: 'var(--color-brand-darker)', tonalBg: 'var(--color-brand-lighter)', border: 'var(--color-brand-lighter)', fillBg: 'var(--color-brand-default)', fillText: 'white' },
+  danger: { text: 'var(--color-error-on-light)', tonalBg: 'var(--color-error-light)', border: 'var(--color-error-light)', fillBg: 'var(--color-error-on-light)', fillText: 'white' },
+  success: { text: 'var(--color-success-on-light)', tonalBg: 'var(--color-success-light)', border: 'var(--color-success-light)', fillBg: 'var(--color-success-on-light)', fillText: 'white' },
+  warning: {
+    text: 'var(--color-warning-on-light)',
+    tonalBg: 'color-mix(in srgb, var(--color-warning-on-light) 15%, white)',
+    border: 'color-mix(in srgb, var(--color-warning-on-light) 30%, white)',
+    fillBg: 'var(--color-warning-on-light)',
+    fillText: 'white',
+  },
+};
+
+const c = styleColors[style];
+const bg = type === 'fill' ? c.fillBg : c.tonalBg;
+const textColor = type === 'fill' ? c.fillText : c.text;
+---
+
+<span class={`tag tag--${density}`} style={`color:${textColor};background:${bg};border-color:${c.border}`}>
+  {leading === 'dot' && <span class="tag__dot" style={`background:${textColor}`}></span>}
+  {label}
+</span>
+
+<style>
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-4xs);
+    border: 0.5px solid;
+    border-radius: var(--radius-full);
+    font-family: var(--font-body);
+    font-size: var(--text-body-xsmall);
+    font-weight: 400;
+    white-space: nowrap;
+  }
+
+  .tag--compact {
+    height: 28px;
+    padding: var(--space-4xs) var(--space-3xs);
+  }
+
+  .tag--comfortable {
+    height: 45px;
+    padding: var(--space-2xs) var(--space-sm);
+  }
+
+  .tag__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: var(--radius-full);
+    flex-shrink: 0;
+  }
+</style>

@@ -1,0 +1,99 @@
+---
+// Figma "Icon Button" — même remarque que Button.astro : pas de node id retrouvé dans
+// cette session, construit à partir de l'anatomie documentée dans le plan Composants DS.
+export type IconButtonDensity = 'default' | 'compact';
+export type IconButtonColor = 'brand' | 'white';
+
+interface Props {
+  density?: IconButtonDensity;
+  color?: IconButtonColor;
+  disabled?: boolean;
+  loading?: boolean;
+  ariaLabel: string;
+  href?: string;
+}
+
+const { density = 'default', color = 'brand', disabled = false, loading = false, ariaLabel, href } = Astro.props;
+const Tag = href ? 'a' : 'button';
+---
+
+<Tag
+  class={`icon-button icon-button--${density} icon-button--${color}`}
+  href={href}
+  aria-label={ariaLabel}
+  disabled={!href && (disabled || loading) ? true : undefined}
+  aria-disabled={disabled || loading ? 'true' : undefined}
+>
+  {loading ? <span class="icon-button__spinner" aria-hidden="true"></span> : <slot />}
+</Tag>
+
+<style>
+  .icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .icon-button--default {
+    width: 48px;
+    height: 48px;
+  }
+
+  .icon-button--compact {
+    width: 40px;
+    height: 40px;
+  }
+
+  .icon-button :global(svg) {
+    width: 24px;
+    height: 24px;
+  }
+
+  .icon-button--brand {
+    background: transparent;
+    color: var(--color-brand-default);
+  }
+
+  .icon-button--white {
+    background: transparent;
+    color: var(--color-text-white);
+  }
+
+  .icon-button:hover:not([aria-disabled='true']) {
+    background: color-mix(in srgb, currentColor 10%, transparent);
+  }
+
+  .icon-button:focus-visible {
+    outline: 2px solid var(--color-brand-default);
+    outline-offset: 2px;
+  }
+
+  .icon-button:active:not([aria-disabled='true']) {
+    background: color-mix(in srgb, currentColor 20%, transparent);
+  }
+
+  .icon-button[aria-disabled='true'] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  .icon-button__spinner {
+    width: 18px;
+    height: 18px;
+    border-radius: var(--radius-full);
+    border: 2px solid color-mix(in srgb, currentColor 30%, transparent);
+    border-top-color: currentColor;
+    animation: icon-button-spin 0.6s linear infinite;
+  }
+
+  @keyframes icon-button-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+</style>

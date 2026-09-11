@@ -1,0 +1,65 @@
+---
+// Figma "Chip" — anatomie documentée dans le plan Composants DS, pas de node id retrouvé
+// dans cette session. Composant purement présentationnel : pas de logique de sélection
+// câblée ici (pas encore de filtres réels sur le produit — US-2/US-3) ; une page qui a
+// besoin d'un vrai toggle doit ajouter son propre script/island autour de ce bouton.
+// Contrairement au Tag, pas de variante `leading=icon` documentée : avatar ou rien.
+interface Props {
+  label: string;
+  selected?: boolean;
+}
+
+const { label, selected = false } = Astro.props;
+---
+
+<button type="button" class="chip" aria-pressed={selected}>
+  {Astro.slots.has('leading') && (
+    <span class="chip__leading">
+      <slot name="leading" />
+    </span>
+  )}
+  {label}
+</button>
+
+<style>
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3xs);
+    height: 36px;
+    padding: var(--space-4xs) var(--space-2xs);
+    border: 0.5px solid var(--color-bg-neutral-tertiary);
+    border-radius: var(--radius-full);
+    background: var(--color-bg-neutral-primary);
+    color: var(--color-text-default);
+    font-family: var(--font-body);
+    font-size: var(--text-body-small);
+    font-weight: 400;
+    cursor: pointer;
+  }
+
+  .chip[aria-pressed='true'] {
+    background: var(--color-brand-lighter);
+    border-color: var(--color-brand-lighter);
+    color: var(--color-brand-darker);
+    font-weight: 500;
+  }
+
+  .chip:hover {
+    filter: brightness(0.97);
+  }
+
+  .chip:focus-visible {
+    outline: 2px solid var(--color-brand-default);
+    outline-offset: 2px;
+  }
+
+  .chip:active {
+    filter: brightness(0.94);
+  }
+
+  .chip__leading {
+    display: inline-flex;
+    align-items: center;
+  }
+</style>

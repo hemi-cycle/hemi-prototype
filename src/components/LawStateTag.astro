@@ -1,0 +1,22 @@
+---
+// Wrapper métier autour de Tag pour le champ `statut_actuel` du JSON loi (Figma "Tag/Law-state").
+import Tag, { type TagStyle } from './Tag.astro';
+
+type Statut = 'en_cours' | 'rejetee' | 'promulguee';
+
+interface Props {
+  statut: Statut | string;
+}
+
+const { statut } = Astro.props;
+
+const stateConfig: Record<Statut, { label: string; style: TagStyle }> = {
+  en_cours: { label: 'En débat', style: 'warning' },
+  rejetee: { label: 'Rejetée', style: 'danger' },
+  promulguee: { label: 'Promulguée', style: 'success' },
+};
+
+const config = stateConfig[statut as Statut] ?? stateConfig.en_cours;
+---
+
+<Tag label={config.label} style={config.style} leading="dot" />

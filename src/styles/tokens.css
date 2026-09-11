@@ -29,6 +29,26 @@
   --color-error-light: #ffc2c0;
   --color-warning-on-light: #d64f00;
 
+  /* Couleurs — bouton (tokens Figma "Button/*") */
+  --color-button-primary-bg: #99a3f5;
+  --color-button-primary-text: #241d86;
+  --color-button-secondary-bg: #e6e7f0;
+  --color-button-secondary-text: #242526;
+
+  /* Couleurs — avatar monogramme (fallback sans photo)
+     ⚠️ Palette provisoire : les 8 tokens réels "Aleph Colors/extended/Avatar Monogram"
+     n'ont pas pu être récupérés depuis Figma (aucune instance monogram trouvée).
+     À remplacer par les vraies valeurs dès qu'elles sont accessibles. */
+  --color-avatar-monogram-1: #3d2aff;
+  --color-avatar-monogram-2: #1c9d4e;
+  --color-avatar-monogram-3: #d64f00;
+  --color-avatar-monogram-4: #ed1811;
+  --color-avatar-monogram-5: #241d86;
+  --color-avatar-monogram-6: #99a3f5;
+  --color-avatar-monogram-7: #4c4c4f;
+  --color-avatar-monogram-8: #a9aab0;
+  --color-avatar-monogram-text: #f0f1fa;
+
   /* Typographie */
   --font-heading: 'Boldonse', serif;
   --font-body: 'DM Sans', sans-serif;

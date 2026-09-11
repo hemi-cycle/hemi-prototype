@@ -1,0 +1,100 @@
+---
+// Figma "Button" — anatomie documentée dans le plan Composants DS (pas de node id
+// retrouvé pour ce composant dans cette session : aucune vérification visuelle directe,
+// construit à partir des tokens "Button/*" déjà extraits + des règles a11y documentées.
+// Seuls 2 types sont documentés côté DS (Brand, Text) — pas de "Secondary/Outline".
+export type ButtonType = 'brand' | 'text';
+
+interface Props {
+  type?: ButtonType;
+  disabled?: boolean;
+  loading?: boolean;
+  href?: string;
+}
+
+const { type = 'brand', disabled = false, loading = false, href } = Astro.props;
+const Tag = href ? 'a' : 'button';
+---
+
+<Tag
+  class={`button button--${type}`}
+  href={href}
+  disabled={!href && (disabled || loading) ? true : undefined}
+  aria-disabled={disabled || loading ? 'true' : undefined}
+>
+  {loading && <span class="button__spinner" aria-hidden="true"></span>}
+  <span class:list={['button__label', { 'button__label--hidden': loading }]}>
+    <slot />
+  </span>
+</Tag>
+
+<style>
+  .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    min-height: 48px;
+    padding: 0 var(--space-md);
+    border: none;
+    border-radius: var(--radius-full);
+    font-family: var(--font-accent);
+    font-size: var(--text-body-small);
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .button--brand {
+    background: var(--color-button-primary-bg);
+    color: var(--color-button-primary-text);
+  }
+
+  .button--text {
+    background: transparent;
+    color: var(--color-text-brand);
+    padding-inline: var(--space-2xs);
+  }
+
+  .button:hover:not([aria-disabled='true']) {
+    filter: brightness(0.96);
+  }
+
+  .button:focus-visible {
+    outline: 2px solid var(--color-brand-default);
+    outline-offset: 2px;
+  }
+
+  .button:active:not([aria-disabled='true']) {
+    filter: brightness(0.92);
+  }
+
+  .button[aria-disabled='true'] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  .button__label--hidden {
+    visibility: hidden;
+  }
+
+  .button__spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 18px;
+    height: 18px;
+    margin: -9px 0 0 -9px;
+    border-radius: var(--radius-full);
+    border: 2px solid color-mix(in srgb, currentColor 30%, transparent);
+    border-top-color: currentColor;
+    animation: button-spin 0.6s linear infinite;
+  }
+
+  @keyframes button-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+</style>

@@ -1,0 +1,81 @@
+---
+// Figma "Avatar" (node 2036:27481). Seul le variant type=photo existe dans le fichier
+// (sizes 88/64/40/32/24/20/16, show-border true/false) — pas d'instance "monogram" trouvée.
+// Le fallback monogramme ci-dessous suit la règle documentée dans Figma (1ère lettre du
+// prénom → 1 des 8 couleurs) mais utilise une palette provisoire, voir tokens.css.
+export type AvatarSize = 88 | 64 | 40 | 32 | 24 | 20 | 16;
+
+interface Props {
+  size?: AvatarSize;
+  showBorder?: boolean;
+  src?: string;
+  name?: string;
+}
+
+const { size = 40, showBorder = false, src, name = '' } = Astro.props;
+
+const letterToBucket = (letter: string): number => {
+  const groups = ['ABC', 'DEF', 'GHI', 'JKL', 'MNO', 'PQR', 'STUV', 'WXYZ'];
+  const upper = letter.toUpperCase();
+  const index = groups.findIndex((g) => g.includes(upper));
+  return index === -1 ? 7 : index;
+};
+
+const initials = name
+  .split(' ')
+  .filter(Boolean)
+  .map((part) => part[0])
+  .slice(0, 2)
+  .join('')
+  .toUpperCase();
+
+const bucket = letterToBucket(name.trim()[0] ?? 'W') + 1;
+const initialsFontSize = Math.max(10, Math.round(size * 0.36));
+---
+
+<span class="avatar" style={`width:${size}px;height:${size}px;${showBorder ? 'border-width:3px' : 'border-width:0'}`}>
+  {src ? (
+    <img src={src} alt="" width={size} height={size} class="avatar__img" />
+  ) : (
+    <span
+      class="avatar__monogram"
+      style={`background:var(--color-avatar-monogram-${bucket});font-size:${initialsFontSize}px`}
+      aria-hidden="true"
+    >
+      {initials}
+    </span>
+  )}
+</span>
+
+<style>
+  .avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: var(--radius-full);
+    border-style: solid;
+    border-color: var(--color-bg-neutral-primary);
+    overflow: hidden;
+  }
+
+  .avatar__img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: var(--radius-full);
+  }
+
+  .avatar__monogram {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    border-radius: var(--radius-full);
+    color: var(--color-avatar-monogram-text);
+    font-family: var(--font-accent);
+    font-weight: 500;
+  }
+</style>
