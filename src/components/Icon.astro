@@ -19,9 +19,13 @@ interface Props {
 
 const { name, weight = 'regular', size = 24, color = 'currentColor', ariaLabel } = Astro.props;
 
+// Seul le dossier "regular" garde le nom nu (ex. house.svg) ; les autres poids
+// suffixent le fichier (ex. house-fill.svg, house-bold.svg).
+const fileName = weight === 'regular' ? name : `${name}-${weight}`;
+
 let raw: string;
 try {
-  const svgPath = require.resolve(`@phosphor-icons/core/${weight}/${name}.svg`);
+  const svgPath = require.resolve(`@phosphor-icons/core/${weight}/${fileName}.svg`);
   raw = readFileSync(svgPath, 'utf-8');
 } catch {
   throw new Error(`Icon.astro: "${name}" (weight: ${weight}) introuvable dans @phosphor-icons/core.`);

@@ -16,7 +16,10 @@ interface Props {
 
 const { id, titre, sousTitre, statut, deposantNom, deposantRole } = Astro.props;
 
-const tags = ['🌾 Agriculture', '🌳 Écologie'];
+const tags = [
+  { label: 'Agriculture', icon: 'plant' },
+  { label: 'Écologie', icon: 'tree' },
+];
 ---
 
 <a href={`${import.meta.env.BASE_URL}/loi/${id}`} class="law-card">
@@ -27,7 +30,7 @@ const tags = ['🌾 Agriculture', '🌳 Écologie'];
     </div>
     <div class="theme-wrapper">
       <LawStateTag statut={statut} />
-      {tags.map((tag) => <Tag label={tag} />)}
+      {tags.map((tag) => <Tag label={tag.label} leading="icon" icon={tag.icon} />)}
     </div>
   </div>
 

@@ -1,24 +1,26 @@
 ---
 import MobileLayout from '../layouts/MobileLayout.astro';
-import LawCard from '../components/LawCard.astro';
+import LawList from '../components/LawList.astro';
 import loi from '../data/loi-duplomb-menonville.json';
 
 const premierDeposant = loi.depose_par[0];
+
+const laws = [
+  {
+    id: loi.id,
+    titre: loi.titre_usuel,
+    sousTitre: loi.sous_titre,
+    statut: loi.statut_actuel,
+    deposantNom: premierDeposant.nom,
+    deposantRole: `${premierDeposant.fonction} · ${premierDeposant.parti}`,
+  },
+];
 ---
 
 <MobileLayout title="À la une">
   <div class="page">
     <h1 class="page__title">À la une</h1>
-    <div class="law-list">
-      <LawCard
-        id={loi.id}
-        titre={loi.titre_usuel}
-        sousTitre={loi.sous_titre}
-        statut={loi.statut_actuel}
-        deposantNom={premierDeposant.nom}
-        deposantRole={`${premierDeposant.fonction} · ${premierDeposant.parti}`}
-      />
-    </div>
+    <LawList laws={laws} />
   </div>
 </MobileLayout>
 
@@ -33,11 +35,5 @@ const premierDeposant = loi.depose_par[0];
     font-weight: 400;
     color: var(--color-text-default);
     margin: var(--space-2xs) 0 var(--space-md);
-  }
-
-  .law-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-xs);
   }
 </style>

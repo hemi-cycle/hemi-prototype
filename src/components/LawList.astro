@@ -1,0 +1,64 @@
+---
+// Composant secondaire : liste de lois avec filtres thématiques (Chip) au-dessus des
+// cartes (LawCard). Filtres statiques/non câblés pour l'instant — pas encore de vrai
+// filtrage (US-2/US-3 backlog), cohérent avec l'état actuel de Chip.
+import Chip from './Chip.astro';
+import LawCard from './LawCard.astro';
+
+interface LawSummary {
+  id: string;
+  titre: string;
+  sousTitre: string;
+  statut: string;
+  deposantNom: string;
+  deposantRole: string;
+}
+
+interface Props {
+  laws: LawSummary[];
+}
+
+const { laws } = Astro.props;
+const filters = ['Tous', 'Agriculture', 'Écologie'];
+---
+
+<div class="law-list">
+  <div class="law-list__filters">
+    {filters.map((filter, index) => (
+      <Chip label={filter} selected={index === 0} />
+    ))}
+  </div>
+  <div class="law-list__items">
+    {laws.map((loi) => (
+      <LawCard
+        id={loi.id}
+        titre={loi.titre}
+        sousTitre={loi.sousTitre}
+        statut={loi.statut}
+        deposantNom={loi.deposantNom}
+        deposantRole={loi.deposantRole}
+      />
+    ))}
+  </div>
+</div>
+
+<style>
+  .law-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .law-list__filters {
+    display: flex;
+    gap: var(--space-2xs);
+    overflow-x: auto;
+    padding-bottom: var(--space-4xs);
+  }
+
+  .law-list__items {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+</style>

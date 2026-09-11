@@ -1,8 +1,10 @@
 ---
 // Composant générique Tag (Figma "Tag"), vérifié via les instances du Law-card (node 2597:23663).
+import Icon from './Icon.astro';
+
 export type TagStyle = 'neutral' | 'brand' | 'danger' | 'success' | 'warning';
 export type TagType = 'tonal' | 'fill';
-export type TagLeading = 'dot' | 'none';
+export type TagLeading = 'dot' | 'icon' | 'none';
 export type TagDensity = 'compact' | 'comfortable';
 
 interface Props {
@@ -10,10 +12,11 @@ interface Props {
   style?: TagStyle;
   type?: TagType;
   leading?: TagLeading;
+  icon?: string;
   density?: TagDensity;
 }
 
-const { label, style = 'neutral', type = 'tonal', leading = 'none', density = 'compact' } = Astro.props;
+const { label, style = 'neutral', type = 'tonal', leading = 'none', icon, density = 'compact' } = Astro.props;
 
 const styleColors: Record<TagStyle, { text: string; tonalBg: string; border: string; fillBg: string; fillText: string }> = {
   neutral: { text: 'var(--color-text-default)', tonalBg: 'transparent', border: 'var(--color-bg-neutral-tertiary)', fillBg: 'var(--color-bg-neutral-inverse-primary)', fillText: 'var(--color-text-white)' },
@@ -36,6 +39,7 @@ const textColor = type === 'fill' ? c.fillText : c.text;
 
 <span class={`tag tag--${density}`} style={`color:${textColor};background:${bg};border-color:${c.border}`}>
   {leading === 'dot' && <span class="tag__dot" style={`background:${textColor}`}></span>}
+  {leading === 'icon' && icon && <Icon name={icon} size={14} color={textColor} />}
   {label}
 </span>
 

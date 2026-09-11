@@ -1,5 +1,6 @@
 ---
 import '../styles/tokens.css';
+import Icon from '../components/Icon.astro';
 
 interface Props {
   title: string;
@@ -12,6 +13,9 @@ function isActive(path: string) {
   const base = import.meta.env.BASE_URL;
   return currentPath === `${base}${path}`.replace(/\/{2,}/g, '/');
 }
+
+const isHome = isActive('') || isActive('/');
+const isAntiseche = isActive('/antiseche');
 ---
 
 <!doctype html>
@@ -33,10 +37,12 @@ function isActive(path: string) {
         <slot />
       </main>
       <nav class="bottom-nav" aria-label="Navigation principale">
-        <a href={import.meta.env.BASE_URL} class:list={['nav-item', { active: isActive('') || isActive('/') }]}>
+        <a href={import.meta.env.BASE_URL} class:list={['nav-item', { active: isHome }]}>
+          <Icon name="house" weight={isHome ? 'fill' : 'regular'} size={24} />
           À la une
         </a>
-        <a href={`${import.meta.env.BASE_URL}/antiseche`} class:list={['nav-item', { active: isActive('/antiseche') }]}>
+        <a href={`${import.meta.env.BASE_URL}/antiseche`} class:list={['nav-item', { active: isAntiseche }]}>
+          <Icon name="book-open" weight={isAntiseche ? 'fill' : 'regular'} size={24} />
           Anti-sèche
         </a>
       </nav>
@@ -77,11 +83,15 @@ function isActive(path: string) {
 
       .nav-item {
         flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--space-4xs);
         text-align: center;
         padding: var(--space-2xs);
         border-radius: var(--radius-small);
         font-family: var(--font-accent);
-        font-size: var(--text-body-small);
+        font-size: var(--text-body-xsmall);
         font-weight: 500;
         text-decoration: none;
         color: var(--color-text-dark-grey);
