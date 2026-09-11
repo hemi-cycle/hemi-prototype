@@ -1,0 +1,36 @@
+---
+// Icônes Phosphor (https://github.com/phosphor-icons/homepage), inlinées en SVG au build
+// depuis @phosphor-icons/core — pas de runtime JS, cohérent avec le choix Astro "zéro JS".
+// Catalogue des noms : https://phosphoricons.com
+import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
+
+const require = createRequire(import.meta.url);
+
+export type IconWeight = 'thin' | 'light' | 'regular' | 'bold' | 'fill' | 'duotone';
+
+interface Props {
+  name: string;
+  weight?: IconWeight;
+  size?: number;
+  color?: string;
+  ariaLabel?: string;
+}
+
+const { name, weight = 'regular', size = 24, color = 'currentColor', ariaLabel } = Astro.props;
+
+let raw: string;
+try {
+  const svgPath = require.resolve(`@phosphor-icons/core/${weight}/${name}.svg`);
+  raw = readFileSync(svgPath, 'utf-8');
+} catch {
+  throw new Error(`Icon.astro: "${name}" (weight: ${weight}) introuvable dans @phosphor-icons/core.`);
+}
+
+const a11yAttrs = ariaLabel ? `role="img" aria-label="${ariaLabel}"` : 'aria-hidden="true"';
+const svg = raw
+  .replace('<svg ', `<svg width="${size}" height="${size}" ${a11yAttrs} `)
+  .replace('fill="currentColor"', `fill="${color}"`);
+---
+
+<Fragment set:html={svg} />

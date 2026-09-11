@@ -12,6 +12,7 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@phosphor-icons/core": "^2.1.1",
     "astro": "^7.3.2"
   },
   "allowScripts": {

@@ -1,5 +1,6 @@
 ---
 import MobileLayout from '../../layouts/MobileLayout.astro';
+import Icon from '../../components/Icon.astro';
 import loi from '../../data/loi-duplomb-menonville.json';
 
 export function getStaticPaths() {
@@ -9,7 +10,10 @@ export function getStaticPaths() {
 
 <MobileLayout title={loi.titre_usuel}>
   <div class="page">
-    <a href={import.meta.env.BASE_URL} class="back-link">&larr; À la une</a>
+    <a href={import.meta.env.BASE_URL} class="back-link">
+      <Icon name="arrow-left" size={16} />
+      À la une
+    </a>
     <h1 class="page__title">{loi.titre_usuel}</h1>
     <p class="page__official">{loi.titre_officiel}</p>
     <p class="page__summary">{loi.resume}</p>
@@ -22,7 +26,9 @@ export function getStaticPaths() {
   }
 
   .back-link {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-4xs);
     font-family: var(--font-accent);
     font-size: var(--text-body-small);
     color: var(--color-text-brand);
