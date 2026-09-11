@@ -12,9 +12,10 @@ interface Props {
   statut: string;
   deposantNom: string;
   deposantRole: string;
+  partiNom: string;
 }
 
-const { id, titre, sousTitre, statut, deposantNom, deposantRole } = Astro.props;
+const { id, titre, sousTitre, statut, deposantNom, deposantRole, partiNom } = Astro.props;
 
 const tags = [
   { label: 'Agriculture', icon: 'plant' },
@@ -42,6 +43,9 @@ const tags = [
       <p class="list-item__label">{deposantNom}</p>
       <p class="list-item__supporting">{deposantRole}</p>
     </div>
+    <!-- Logo du parti : placeholder monogramme pour l'instant, à remplacer par les
+         vrais logos (src/assets/logos_partis/) une fois le mapping fait proprement. -->
+    <Avatar size={40} showBorder name={partiNom} />
   </div>
 </a>
 

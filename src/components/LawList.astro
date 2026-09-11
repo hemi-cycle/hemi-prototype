@@ -12,6 +12,7 @@ interface LawSummary {
   statut: string;
   deposantNom: string;
   deposantRole: string;
+  partiNom: string;
 }
 
 interface Props {
@@ -37,6 +38,7 @@ const filters = ['Tous', 'Agriculture', 'Écologie'];
         statut={loi.statut}
         deposantNom={loi.deposantNom}
         deposantRole={loi.deposantRole}
+        partiNom={loi.partiNom}
       />
     ))}
   </div>
