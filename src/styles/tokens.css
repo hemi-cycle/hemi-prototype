@@ -72,6 +72,7 @@
   --text-body-xsmall: 12px;
 
   /* Espacements */
+  --space-none: 0;
   --space-4xs: 4px;
   --space-3xs: 8px;
   --space-2xs: 12px;
