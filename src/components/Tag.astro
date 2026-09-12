@@ -48,21 +48,21 @@ const textColor = type === 'fill' ? c.fillText : c.text;
     display: inline-flex;
     align-items: center;
     gap: var(--space-4xs);
+    width: fit-content;
+    height: fit-content;
     border: 0.5px solid;
     border-radius: var(--radius-full);
     font-family: var(--font-body);
-    font-size: var(--text-body-xsmall);
+    font-size: var(--text-body-small);
     font-weight: 400;
     white-space: nowrap;
   }
 
   .tag--compact {
-    height: 28px;
     padding: var(--space-4xs) var(--space-3xs);
   }
 
   .tag--comfortable {
-    height: 45px;
     padding: var(--space-2xs) var(--space-sm);
   }
 
