@@ -3,6 +3,8 @@
 // ⚠️ La page anti-sèche/glossaire cible n'existe pas encore (US-10) : le lien par
 // défaut pointe vers une page qui n'est pas encore construite, voir roadmap.
 import Icon from './Icon.astro';
+import paperTextureWebp from '../assets/paper-texture.webp';
+import paperTextureJpg from '../assets/paper-texture.jpg';
 
 interface Props {
   question: string;
@@ -18,14 +20,29 @@ const { question, href } = Astro.props;
   <Icon name="arrow-up-right" size={24} color="var(--color-text-white)" />
 </a>
 
-<style>
+<style define:vars={{ paperTextureWebp: `url(${paperTextureWebp.src})`, paperTextureJpg: `url(${paperTextureJpg.src})` }}>
   .wiki-link {
     display: flex;
     align-items: center;
     gap: var(--space-3xs);
     padding: var(--space-xs) var(--space-3xs);
     border-radius: var(--radius-small);
-    background: linear-gradient(135deg, var(--color-brand-default), var(--color-brand-darker));
+    background-color: var(--color-brand-default);
+    background-image: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--color-brand-default) 88%, transparent),
+        color-mix(in srgb, var(--color-brand-darker) 88%, transparent)
+      ),
+      var(--paperTextureJpg);
+    background-image: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--color-brand-default) 88%, transparent),
+        color-mix(in srgb, var(--color-brand-darker) 88%, transparent)
+      ),
+      image-set(var(--paperTextureWebp) type('image/webp'), var(--paperTextureJpg) type('image/jpeg'));
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
     text-decoration: none;
   }
 
