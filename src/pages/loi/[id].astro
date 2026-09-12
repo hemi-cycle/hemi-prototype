@@ -5,7 +5,6 @@
 // de discours, pas de visualisation hémicycle (US-8, déjà reportée).
 import MobileLayout from '../../layouts/MobileLayout.astro';
 import Icon from '../../components/Icon.astro';
-import IconButton from '../../components/IconButton.astro';
 import LawStateTag from '../../components/LawStateTag.astro';
 import Avatar from '../../components/Avatar.astro';
 import ArgumentsList from '../../components/ArgumentsList.astro';
@@ -33,10 +32,6 @@ const vote = loi.votes[0];
       <Icon name="arrow-left" size={20} />
       Retour
     </a>
-    <div class="hero__actions">
-      <IconButton ariaLabel="Partager" density="compact"><Icon name="share" size={20} /></IconButton>
-      <IconButton ariaLabel="Enregistrer" density="compact"><Icon name="bookmark-simple" size={20} /></IconButton>
-    </div>
   </header>
 
   <div class="page">
@@ -118,7 +113,6 @@ const vote = loi.votes[0];
   .hero {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     padding: var(--space-2xs) var(--space-xs);
     background: var(--color-bg-neutral-secondary);
   }
@@ -136,11 +130,6 @@ const vote = loi.votes[0];
     font-weight: 500;
     color: var(--color-text-default);
     text-decoration: none;
-  }
-
-  .hero__actions {
-    display: flex;
-    gap: var(--space-4xs);
   }
 
   .page {
