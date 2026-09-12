@@ -67,7 +67,9 @@ const vote = loi.votes[0];
                   <p class="depositor__role">{personne.fonction} · {personne.parti}</p>
                 </div>
                 <a href={personne.source} target="_blank" rel="noopener noreferrer" class="depositor__link" aria-label={`Fiche de ${personne.nom} sur senat.fr`}>
-                  <Icon name="arrow-up-right" size={16} />
+                  <!-- Logo du parti : placeholder monogramme pour l'instant, à remplacer par les
+                       vrais logos (src/assets/logos_partis/) une fois le mapping fait proprement. -->
+                  <Avatar size={40} showBorder name={personne.parti} />
                 </a>
               </div>
             </>
@@ -295,10 +297,6 @@ const vote = loi.votes[0];
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: var(--radius-full);
-    color: var(--color-text-brand);
     flex-shrink: 0;
   }
 
