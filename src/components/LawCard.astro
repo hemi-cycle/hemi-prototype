@@ -4,6 +4,7 @@
 import Tag from './Tag.astro';
 import LawStateTag from './LawStateTag.astro';
 import Avatar from './Avatar.astro';
+import Divider from './Divider.astro';
 
 interface Props {
   id: string;
@@ -35,7 +36,7 @@ const tags = [
     </div>
   </div>
 
-  <div class="divider"></div>
+  <Divider />
 
   <div class="list-item">
     <Avatar size={40} showBorder name={deposantNom} />
@@ -94,11 +95,6 @@ const tags = [
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-4xs);
-  }
-
-  .divider {
-    height: 0.5px;
-    background: var(--color-bg-neutral-tertiary);
   }
 
   .list-item {
