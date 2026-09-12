@@ -42,7 +42,7 @@ const vote = loi.votes[0];
   </header>
 
   <div class="page">
-    <section class="card">
+    <section class="introduction">
       <div class="title-block">
         <div class="title-block__eyebrow">
           <span class="title-block__kind">Proposition de loi</span>
@@ -172,6 +172,15 @@ const vote = loi.votes[0];
     background: var(--color-bg-neutral-primary);
     border-radius: var(--radius-small);
     padding: var(--space-sm) 0 var(--space-md);
+  }
+
+  .introduction {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+    background: var(--color-bg-neutral-primary);
+    border-radius: var(--radius-small);
+    padding: var(--space-sm) 0 var(--space-none);
   }
 
   .card__body {
