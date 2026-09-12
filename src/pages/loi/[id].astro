@@ -108,11 +108,9 @@ const vote = loi.votes[0];
 
     <WikiLink question="Combien faut-il de votes pour qu'une loi passe ?" href={`${base}/antiseche`} />
 
-    <section class="card">
-      <h2 class="section__title">On rembobine !</h2>
-      <div class="card__body">
-        <Timeline etapes={loi.etapes} />
-      </div>
+    <section class="timeline-section">
+      <h2 class="timeline-section__title">On rembobine !</h2>
+      <Timeline etapes={loi.etapes} />
     </section>
 
     <section class="card">
@@ -174,6 +172,23 @@ const vote = loi.votes[0];
     background: var(--color-bg-neutral-primary);
     border-radius: var(--radius-small);
     padding: var(--space-sm) 0 var(--space-md);
+  }
+
+  .timeline-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xs);
+    background: var(--color-bg-neutral-primary);
+    border-radius: var(--radius-small);
+    padding: var(--space-md) var(--space-xs) var(--space-lg);
+  }
+
+  .timeline-section__title {
+    font-family: var(--font-heading);
+    font-size: var(--text-h3);
+    font-weight: 400;
+    color: var(--color-text-default);
+    margin: 0;
   }
 
   .introduction {
