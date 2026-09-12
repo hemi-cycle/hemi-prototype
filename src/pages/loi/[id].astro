@@ -45,7 +45,7 @@ const vote = loi.votes[0];
     </section>
 
     <section class="section">
-      <h2 class="section__title">Déposé par</h2>
+      <h2 class="section__title section__title--label">Déposé par</h2>
       <div class="depositors">
         {loi.depose_par.map((personne) => (
           <div class="depositor">
@@ -63,7 +63,7 @@ const vote = loi.votes[0];
     </section>
 
     <section class="section">
-      <h2 class="section__title">En bref</h2>
+      <h2 class="section__title section__title--accent">En bref</h2>
       <details class="summary">
         <summary class="summary__toggle">
           <p class="summary__text">{loi.description}</p>
@@ -100,7 +100,10 @@ const vote = loi.votes[0];
         {loi.sources.map((source) => (
           <a href={source.url} target="_blank" rel="noopener noreferrer" class="source-item">
             <Icon name="file-text" size={24} color="var(--color-text-dark-grey)" />
-            <span class="source-item__label">{source.label}</span>
+            <div class="source-item__content">
+              <span class="source-item__label">{source.label}</span>
+              <span class="source-item__domain">{new URL(source.url).hostname}</span>
+            </div>
             <Icon name="arrow-up-right" size={16} color="var(--color-text-dark-grey)" />
           </a>
         ))}
@@ -153,10 +156,10 @@ const vote = loi.votes[0];
   }
 
   .title-block__kind {
-    font-family: var(--font-accent);
+    font-family: var(--font-body);
     font-size: var(--text-body-small);
     font-weight: 500;
-    color: var(--color-text-default);
+    color: var(--color-text-dark-grey);
   }
 
   .title-block__title {
@@ -169,8 +172,9 @@ const vote = loi.votes[0];
 
   .title-block__subtitle {
     font-family: var(--font-body);
-    font-size: var(--text-body-medium);
-    color: var(--color-text-dark-grey);
+    font-size: var(--text-body-small);
+    font-weight: 500;
+    color: var(--color-text-default);
     margin: 0;
   }
 
@@ -182,10 +186,23 @@ const vote = loi.votes[0];
 
   .section__title {
     font-family: var(--font-heading);
-    font-size: var(--text-h3);
+    font-size: var(--text-body-small);
     font-weight: 400;
     color: var(--color-text-default);
     margin: 0;
+  }
+
+  .section__title--label {
+    font-family: var(--font-body);
+    font-weight: 500;
+    color: var(--color-text-dark-grey);
+  }
+
+  .section__title--accent {
+    font-family: var(--font-body);
+    font-size: var(--text-body-medium);
+    font-weight: 500;
+    color: var(--color-brand-darker);
   }
 
   .depositors {
@@ -216,7 +233,7 @@ const vote = loi.votes[0];
 
   .depositor__name {
     font-family: var(--font-body);
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 500;
     color: var(--color-text-default);
     margin: 0;
@@ -259,7 +276,7 @@ const vote = loi.votes[0];
     font-family: var(--font-body);
     font-size: var(--text-body-small);
     line-height: 20px;
-    color: var(--color-text-dark-grey);
+    color: var(--color-text-default);
     margin: 0 0 var(--space-2xs);
   }
 
@@ -271,10 +288,11 @@ const vote = loi.votes[0];
   }
 
   .summary__cta {
-    font-family: var(--font-accent);
+    font-family: var(--font-body);
     font-size: var(--text-body-small);
-    font-weight: 500;
-    color: var(--color-text-brand);
+    font-weight: 400;
+    color: var(--color-text-default);
+    text-decoration: underline;
   }
 
   .summary[open] .summary__cta {
@@ -326,12 +344,24 @@ const vote = loi.votes[0];
     border-bottom: none;
   }
 
-  .source-item__label {
-    flex: 1;
+  .source-item__content {
+    display: flex;
+    flex-direction: column;
     min-width: 0;
+    flex: 1;
+  }
+
+  .source-item__label {
     font-family: var(--font-body);
-    font-size: var(--text-body-small);
+    font-size: 16px;
     font-weight: 500;
     color: var(--color-text-default);
+    text-decoration: underline;
+  }
+
+  .source-item__domain {
+    font-family: var(--font-body);
+    font-size: 12px;
+    color: var(--color-text-dark-grey);
   }
 </style>
