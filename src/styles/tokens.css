@@ -16,11 +16,18 @@
   --color-text-default: #242526;
   --color-text-dark-grey: #4c4c4f;
   --color-text-light-grey: #a9aab0;
+  --color-icon-neutral-disabled: #626266;
   --color-text-white: #e6e7f0;
   --color-text-brand: #3d2aff;
 
   --color-border-neutral-primary: #3b3b3d;
   --color-border-neutral-secondary: #c4c5cc;
+
+  /* Couleurs — overlay (états, superposés sur une surface de base) */
+  --color-overlay-dark-10: rgba(31, 31, 31, 0.1);
+  --color-overlay-dark-20: rgba(31, 31, 31, 0.2);
+  --color-overlay-dark-30: rgba(31, 31, 31, 0.3);
+  --color-overlay-brand-20: rgba(69, 85, 219, 0.2);
 
   /* Couleurs — état */
   --color-success-on-light: #1c9d4e;
@@ -28,6 +35,8 @@
   --color-error-on-light: #ed1811;
   --color-error-light: #ffc2c0;
   --color-warning-on-light: #d64f00;
+  --color-warning-on-dark: #ffa12f;
+  --color-warning-dark: #a33c09;
 
   /* Couleurs — bouton (tokens Figma "Button/*") */
   --color-button-primary-bg: #99a3f5;

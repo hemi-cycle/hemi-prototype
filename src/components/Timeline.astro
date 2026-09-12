@@ -1,12 +1,10 @@
 ---
-// "On rembobine !" — frise du parcours législatif (Figma node 2583:18406, US-6 backlog).
-// Anatomie vérifiée sur le 1er step (node 2583:18437) : ligne verticale + point
-// (coché quand statut="fait") + carte (tag date + libellé + lien source).
-// Le Figma montre aussi une description longue par étape et un point "à venir"
-// (cercle vide, pas de coche) — notre JSON n'a que `libelle` (pas de paragraphe),
-// et toutes les étapes connues sont `statut="fait"` ; le rendu gère déjà les deux
-// cas mais le style "à venir" reste non vérifié faute d'exemple réel.
-import Tag from './Tag.astro';
+// "On rembobine !" — frise du parcours législatif (US-6 backlog).
+// Le composant "Law Timeline Item" (Figma node 2962:17553) précise sa propre règle
+// d'usage : 4 items max affichés par défaut, sinon le surplus est replié derrière un
+// item "Collapsed" (bouton pilule) qui se déplie au clic — implémenté ici en natif
+// <details>/<summary>, zéro JS. Toujours visibles : le 1er et le dernier step.
+import TimelineItem from './TimelineItem.astro';
 import Icon from './Icon.astro';
 
 interface Etape {
@@ -23,41 +21,43 @@ interface Props {
 
 const { etapes } = Astro.props;
 
-const chambreLabels: Record<string, string> = {
-  senat: 'Sénat',
-  assemblee_nationale: 'Assemblée nationale',
-  cmp: 'Commission mixte paritaire',
-  conseil_constitutionnel: 'Conseil constitutionnel',
-  presidence: 'Présidence de la République',
-};
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
-}
+const MAX_VISIBLE = 4;
+const shouldCollapse = etapes.length > MAX_VISIBLE;
+const first = etapes[0];
+const last = etapes[etapes.length - 1];
+const middle = shouldCollapse ? etapes.slice(1, -1) : [];
 ---
 
 <div class="timeline">
-  {etapes.map((etape, index) => (
-    <div class="timeline__item">
-      <div class="timeline__marker">
-        <span class={`timeline__dot ${etape.statut === 'fait' ? 'timeline__dot--done' : ''}`}>
-          {etape.statut === 'fait' && <Icon name="check" size={12} color="white" />}
-        </span>
-        {index < etapes.length - 1 && <span class="timeline__line"></span>}
+  {shouldCollapse ? (
+    <>
+      <TimelineItem etape={first} hasLine={true} />
+
+      <div class="timeline-item">
+        <div class="timeline-item__marker">
+          <span class="timeline-item__dot timeline-item__dot--done">
+            <Icon name="check" size={12} color="white" />
+          </span>
+          <span class="timeline-item__line timeline-item__line--done"></span>
+        </div>
+        <details class="timeline-collapse">
+          <summary class="timeline-collapse__toggle">
+            <Icon name="check-circle" weight="fill" size={20} color="var(--color-brand-on-darker)" />
+            Voir les {middle.length} étapes intermédiaires
+          </summary>
+          <div class="timeline-collapse__items">
+            {middle.map((etape) => (
+              <TimelineItem etape={etape} hasLine={true} />
+            ))}
+          </div>
+        </details>
       </div>
-      <div class="timeline__content">
-        <Tag label={formatDate(etape.date)} style="brand" type="fill" />
-        <p class="timeline__title">{etape.libelle}</p>
-        {chambreLabels[etape.chambre] && <p class="timeline__chambre">{chambreLabels[etape.chambre]}</p>}
-        {etape.source && (
-          <a href={etape.source} target="_blank" rel="noopener noreferrer" class="timeline__source">
-            Voir la source
-            <Icon name="arrow-up-right" size={14} />
-          </a>
-        )}
-      </div>
-    </div>
-  ))}
+
+      <TimelineItem etape={last} hasLine={false} />
+    </>
+  ) : (
+    etapes.map((etape, index) => <TimelineItem etape={etape} hasLine={index < etapes.length - 1} />)
+  )}
 </div>
 
 <style>
@@ -66,77 +66,74 @@ function formatDate(iso: string) {
     flex-direction: column;
   }
 
-  .timeline__item {
+  .timeline-item {
     display: flex;
     gap: var(--space-3xs);
   }
 
-  .timeline__marker {
+  .timeline-item__marker {
     display: flex;
     flex-direction: column;
     align-items: center;
     flex-shrink: 0;
-    padding-top: var(--space-xs);
+    padding-top: var(--space-3xs);
   }
 
-  .timeline__dot {
+  .timeline-item__dot {
     display: flex;
     align-items: center;
     justify-content: center;
     width: 16px;
     height: 16px;
     border-radius: var(--radius-full);
-    border: 2px solid var(--color-brand-darker);
-    background: var(--color-bg-neutral-primary);
     flex-shrink: 0;
   }
 
-  .timeline__dot--done {
+  .timeline-item__dot--done {
     background: var(--color-brand-darker);
   }
 
-  .timeline__line {
+  .timeline-item__line {
     width: 2px;
     flex: 1;
-    background: var(--color-brand-darker);
     margin: var(--space-4xs) 0;
   }
 
-  .timeline__content {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-3xs);
+  .timeline-item__line--done {
+    background: var(--color-brand-darker);
+  }
+
+  .timeline-collapse {
     flex: 1;
     min-width: 0;
-    padding: var(--space-xs) var(--space-xs) var(--space-sm) var(--space-2xs);
-    background: var(--color-bg-neutral-primary);
-    border-radius: var(--radius-small);
   }
 
-  .timeline__title {
-    font-family: var(--font-heading);
-    font-size: var(--text-body-small);
-    font-weight: 400;
-    color: var(--color-text-default);
-    margin: 0;
-  }
-
-  .timeline__chambre {
-    font-family: var(--font-body);
-    font-size: var(--text-body-xsmall);
-    color: var(--color-text-dark-grey);
-    margin: calc(var(--space-4xs) * -1) 0 0;
-  }
-
-  .timeline__source {
-    display: inline-flex;
+  .timeline-collapse__toggle {
+    display: flex;
     align-items: center;
-    gap: var(--space-4xs);
+    gap: var(--space-2xs);
+    height: 48px;
+    padding: 0 var(--space-xs);
+    border-radius: var(--radius-full);
+    background: var(--color-brand-darker);
+    color: var(--color-brand-on-darker);
     font-family: var(--font-accent);
-    font-size: var(--text-body-xsmall);
+    font-size: var(--text-body-small);
     font-weight: 500;
-    color: var(--color-text-brand);
-    text-decoration: none;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .timeline-collapse__toggle::-webkit-details-marker {
+    display: none;
+  }
+
+  .timeline-collapse[open] .timeline-collapse__toggle {
+    display: none;
+  }
+
+  .timeline-collapse__items {
+    display: flex;
+    flex-direction: column;
   }
 </style>

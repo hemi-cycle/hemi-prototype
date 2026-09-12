@@ -1,0 +1,159 @@
+---
+// Figma "Law Timeline Item" (node 2962:17553) — un step de frise, 3 variantes visuelles
+// selon le statut : done (fait), in-progress (en_cours), estimated (tout le reste —
+// couvre un futur `statut: "estime"` pas encore présent dans le schéma JSON actuel).
+import Tag from './Tag.astro';
+import Icon from './Icon.astro';
+
+interface Etape {
+  date: string;
+  chambre: string;
+  libelle: string;
+  statut: string;
+  source?: string;
+}
+
+interface Props {
+  etape: Etape;
+  hasLine?: boolean;
+}
+
+const { etape, hasLine = true } = Astro.props;
+
+const chambreLabels: Record<string, string> = {
+  senat: 'Sénat',
+  assemblee_nationale: 'Assemblée nationale',
+  cmp: 'Commission mixte paritaire',
+  conseil_constitutionnel: 'Conseil constitutionnel',
+  presidence: 'Présidence de la République',
+};
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+type Variant = 'done' | 'in-progress' | 'estimated';
+const variant: Variant = etape.statut === 'fait' ? 'done' : etape.statut === 'en_cours' ? 'in-progress' : 'estimated';
+---
+
+<div class={`timeline-item timeline-item--${variant}`}>
+  <div class="timeline-item__marker">
+    <span class="timeline-item__dot">
+      {variant === 'done' && <Icon name="check" size={12} color="white" />}
+    </span>
+    {hasLine && <span class="timeline-item__line"></span>}
+  </div>
+  <div class="timeline-item__content">
+    {variant === 'done' && <Tag label={formatDate(etape.date)} style="brand" type="fill" />}
+    {variant === 'in-progress' && <Tag label="En cours" style="warning" type="fill" leading="dot" />}
+    {variant === 'estimated' && <Tag label={`Estimé le ${formatDate(etape.date)}`} style="neutral" type="tonal" />}
+
+    <p class="timeline-item__title">{etape.libelle}</p>
+    {chambreLabels[etape.chambre] && <p class="timeline-item__chambre">{chambreLabels[etape.chambre]}</p>}
+    {variant === 'done' && etape.source && (
+      <a href={etape.source} target="_blank" rel="noopener noreferrer" class="timeline-item__source">
+        Voir la source
+        <Icon name="arrow-up-right" size={14} />
+      </a>
+    )}
+  </div>
+</div>
+
+<style>
+  .timeline-item {
+    display: flex;
+    gap: var(--space-3xs);
+  }
+
+  .timeline-item__marker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+    padding-top: var(--space-xs);
+  }
+
+  .timeline-item__dot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: var(--radius-full);
+    flex-shrink: 0;
+  }
+
+  .timeline-item--done .timeline-item__dot {
+    background: var(--color-brand-darker);
+  }
+
+  .timeline-item--in-progress .timeline-item__dot {
+    background: var(--color-warning-on-light);
+  }
+
+  .timeline-item--estimated .timeline-item__dot {
+    background: var(--color-bg-neutral-primary);
+    border: 2px solid var(--color-icon-neutral-disabled);
+  }
+
+  .timeline-item__line {
+    margin: var(--space-4xs) 0;
+    flex: 1;
+  }
+
+  .timeline-item--done .timeline-item__line,
+  .timeline-item--in-progress .timeline-item__line {
+    width: 2px;
+  }
+
+  .timeline-item--done .timeline-item__line {
+    background: var(--color-brand-darker);
+  }
+
+  .timeline-item--in-progress .timeline-item__line {
+    background: var(--color-warning-on-light);
+  }
+
+  .timeline-item--estimated .timeline-item__line {
+    width: 0;
+    border-left: 2px dashed var(--color-icon-neutral-disabled);
+  }
+
+  .timeline-item__content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3xs);
+    flex: 1;
+    min-width: 0;
+    padding: var(--space-xs) var(--space-xs) var(--space-sm) var(--space-2xs);
+    background: var(--color-bg-neutral-primary);
+    border-radius: var(--radius-small);
+  }
+
+  .timeline-item__title {
+    font-family: var(--font-heading);
+    font-size: var(--text-body-small);
+    font-weight: 400;
+    color: var(--color-text-default);
+    margin: 0;
+  }
+
+  .timeline-item__chambre {
+    font-family: var(--font-body);
+    font-size: var(--text-body-xsmall);
+    color: var(--color-text-dark-grey);
+    margin: calc(var(--space-4xs) * -1) 0 0;
+  }
+
+  .timeline-item__source {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-4xs);
+    font-family: var(--font-accent);
+    font-size: var(--text-body-xsmall);
+    font-weight: 500;
+    color: var(--color-text-brand);
+    text-decoration: none;
+  }
+</style>
