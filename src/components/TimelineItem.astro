@@ -11,7 +11,6 @@ interface Etape {
   chambre: string;
   libelle: string;
   statut: string;
-  source?: string;
 }
 
 interface Props {
@@ -54,12 +53,6 @@ const variant: Variant = etape.statut === 'fait' ? 'done' : etape.statut === 'en
         <p class="timeline-item__title">{etape.libelle}</p>
         {chambreLabels[etape.chambre] && <p class="timeline-item__chambre">{chambreLabels[etape.chambre]}</p>}
       </div>
-      {variant === 'done' && etape.source && (
-        <a href={etape.source} target="_blank" rel="noopener noreferrer" class="timeline-item__source">
-          Voir la source
-          <Icon name="arrow-up-right" size={14} />
-        </a>
-      )}
     </div>
   </div>
 </div>
@@ -170,16 +163,5 @@ const variant: Variant = etape.statut === 'fait' ? 'done' : etape.statut === 'en
     font-size: var(--text-body-xsmall);
     color: var(--color-text-dark-grey);
     margin: 0;
-  }
-
-  .timeline-item__source {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-4xs);
-    font-family: var(--font-accent);
-    font-size: var(--text-body-xsmall);
-    font-weight: 500;
-    color: var(--color-text-brand);
-    text-decoration: none;
   }
 </style>

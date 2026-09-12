@@ -2,8 +2,9 @@
 // "On rembobine !" — frise du parcours législatif (US-6 backlog).
 // Le composant "Law Timeline Item" (Figma node 2962:17553) précise sa propre règle
 // d'usage : 4 items max affichés par défaut, sinon le surplus est replié derrière un
-// item "Collapsed" (bouton pilule) qui se déplie au clic — implémenté ici en natif
-// <details>/<summary>, zéro JS. Toujours visibles : le 1er et le dernier step.
+// item "Collapsed" (node 2963:17794/2963:17858 pour les états replié/déplié) — un
+// simple lien texte brand, sans fond, qui se déplie au clic — implémenté ici en
+// natif <details>/<summary>, zéro JS. Toujours visibles : le 1er et le dernier step.
 import TimelineItem from './TimelineItem.astro';
 import Icon from './Icon.astro';
 
@@ -12,7 +13,6 @@ interface Etape {
   chambre: string;
   libelle: string;
   statut: string;
-  source?: string;
 }
 
 interface Props {
@@ -110,16 +110,12 @@ const middle = shouldCollapse ? etapes.slice(1, -1) : [];
   .timeline-collapse__toggle {
     display: flex;
     align-items: center;
-    justify-content: center;
     height: 48px;
     padding: 0 var(--space-xs);
-    border-radius: var(--radius-extra-large);
-    background: var(--color-brand-darker);
-    color: var(--color-brand-on-darker);
+    color: var(--color-brand-darker);
     font-family: var(--font-accent);
     font-size: var(--text-body-small);
     font-weight: 500;
-    text-align: center;
     cursor: pointer;
     list-style: none;
   }
