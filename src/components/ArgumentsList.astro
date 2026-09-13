@@ -22,7 +22,7 @@ const { pour, contre } = Astro.props;
       <span>POUR</span>
     </div>
     <ul class="arguments__list">
-      {pour.map((argument) => <li>{argument}</li>)}
+      {pour.map((argument) => <li><h3 class="arguments__item">{argument}</h3></li>)}
     </ul>
   </div>
 
@@ -32,7 +32,7 @@ const { pour, contre } = Astro.props;
       <span>CONTRE</span>
     </div>
     <ul class="arguments__list">
-      {contre.map((argument) => <li>{argument}</li>)}
+      {contre.map((argument) => <li><h3 class="arguments__item">{argument}</h3></li>)}
     </ul>
   </div>
 </div>
@@ -94,8 +94,13 @@ const { pour, contre } = Astro.props;
   .arguments__list li {
     padding: var(--space-2xs);
     background: var(--color-bg-neutral-primary);
+  }
+
+  .arguments__item {
+    margin: 0;
     font-family: var(--font-body);
     font-size: var(--text-body-small);
+    font-weight: 400;
     line-height: 20px;
     color: var(--color-text-default);
   }
