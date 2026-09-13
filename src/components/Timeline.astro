@@ -2,9 +2,11 @@
 // "On rembobine !" — frise du parcours législatif (US-6 backlog).
 // Le composant "Law Timeline Item" (Figma node 2962:17553) précise sa propre règle
 // d'usage : 4 items max affichés par défaut, sinon le surplus est replié derrière un
-// item "Collapsed" (node 2963:17794/2963:17858 pour les états replié/déplié) — un
-// simple lien texte brand, sans fond, qui se déplie au clic — implémenté ici en
-// natif <details>/<summary>, zéro JS. Toujours visibles : le 1er et le dernier step.
+// item de bascule (Figma "Collapsed"/"Expanded" — node 2963:17794/2963:17858) : un
+// vrai item de frise avec son propre marqueur (pastille + flèche haut/bas) et un
+// bouton pilule pleine largeur dont le libellé passe de "Voir" à "Cacher les X
+// étapes intermédiaires" — implémenté ici en natif <details>/<summary>, zéro JS.
+// Toujours visibles : le 1er et le dernier step.
 import TimelineItem from './TimelineItem.astro';
 import Icon from './Icon.astro';
 
@@ -33,24 +35,30 @@ const middle = shouldCollapse ? etapes.slice(1, -1) : [];
     <>
       <TimelineItem etape={first} hasLine={true} />
 
-      <div class="timeline-item">
-        <div class="timeline-item__marker">
-          <span class="timeline-item__dot timeline-item__dot--done">
-            <Icon name="check" size={12} color="white" />
-          </span>
-          <span class="timeline-item__line timeline-item__line--done"></span>
-        </div>
-        <details class="timeline-collapse">
-          <summary class="timeline-collapse__toggle">
-            Voir les {middle.length} étapes intermédiaires
-          </summary>
-          <div class="timeline-collapse__items">
-            {middle.map((etape) => (
-              <TimelineItem etape={etape} hasLine={true} />
-            ))}
+      <details class="timeline-collapse">
+        <summary class="timeline-collapse__summary">
+          <div class="timeline-item__marker">
+            <span class="timeline-collapse__dot">
+              <Icon name="caret-down" size={12} color="white" weight="bold" />
+              <Icon name="caret-up" size={12} color="white" weight="bold" />
+            </span>
+            <span class="timeline-item__line timeline-item__line--done"></span>
           </div>
-        </details>
-      </div>
+          <span class="timeline-collapse__trigger">
+            <span class="timeline-collapse__label timeline-collapse__label--closed">
+              Voir les {middle.length} étapes intermédiaires
+            </span>
+            <span class="timeline-collapse__label timeline-collapse__label--open">
+              Cacher les {middle.length} étapes intermédiaires
+            </span>
+          </span>
+        </summary>
+        <div class="timeline-collapse__items">
+          {middle.map((etape) => (
+            <TimelineItem etape={etape} hasLine={true} />
+          ))}
+        </div>
+      </details>
 
       <TimelineItem etape={last} hasLine={false} />
     </>
@@ -102,30 +110,75 @@ const middle = shouldCollapse ? etapes.slice(1, -1) : [];
     background: var(--color-brand-darker);
   }
 
-  .timeline-collapse {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .timeline-collapse__toggle {
+  .timeline-collapse__summary {
     display: flex;
-    align-items: center;
-    height: 48px;
-    padding: 0 var(--space-xs);
-    color: var(--color-brand-darker);
-    font-family: var(--font-accent);
-    font-size: var(--text-body-small);
-    font-weight: 500;
+    gap: var(--space-3xs);
     cursor: pointer;
     list-style: none;
   }
 
-  .timeline-collapse__toggle::-webkit-details-marker {
+  .timeline-collapse__summary::-webkit-details-marker {
     display: none;
   }
 
-  .timeline-collapse[open] .timeline-collapse__toggle {
+  .timeline-collapse__dot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: var(--radius-full);
+    background: var(--color-brand-darker);
+    flex-shrink: 0;
+  }
+
+  .timeline-collapse__dot :global(svg:last-child) {
     display: none;
+  }
+
+  .timeline-collapse[open] .timeline-collapse__dot :global(svg:first-child) {
+    display: none;
+  }
+
+  .timeline-collapse[open] .timeline-collapse__dot :global(svg:last-child) {
+    display: block;
+  }
+
+  .timeline-collapse__trigger {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    height: 48px;
+    min-width: 0;
+    padding: 0 var(--space-xs);
+    border-radius: var(--radius-extra-large);
+    color: var(--color-brand-darker);
+    font-family: var(--font-body);
+    font-size: var(--text-body-small);
+    font-weight: 500;
+    line-height: 18px;
+  }
+
+  .timeline-collapse__summary:hover .timeline-collapse__trigger {
+    background: var(--color-overlay-brand-20);
+  }
+
+  .timeline-collapse__label {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .timeline-collapse__label--open {
+    display: none;
+  }
+
+  .timeline-collapse[open] .timeline-collapse__label--closed {
+    display: none;
+  }
+
+  .timeline-collapse[open] .timeline-collapse__label--open {
+    display: block;
   }
 
   .timeline-collapse__items {
