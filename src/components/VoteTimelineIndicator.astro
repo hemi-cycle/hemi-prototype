@@ -1,0 +1,72 @@
+---
+// "Vote timeline indicator" (Figma node 2976:8354) — la ligne de connexion au-dessus
+// de chaque VoteTimelineToggle. La maquette elle-même ne pose une pastille que pour
+// un vote "Estimated" (pas encore tenu, ligne pointillée) ; les votes déjà tenus n'ont
+// qu'une ligne fine sans pastille. Le prototype garde volontairement une pastille à
+// chaque jointure entre votes déjà tenus (retour explicite du produit après test
+// visuel) : chaque item porte sa propre pastille sur son bord DROIT quand un item le
+// suit, pour rejoindre le suivant — évite d'avoir deux pastilles superposées à la
+// même jointure.
+// Pastille = anneau creux (pas un disque plein) : fill brand-darker (invisible sur le
+// fond du Container, qui est aussi brand-darker) + contour 2px border-neutral/secondary.
+// "estimated" (ligne pointillée + pastilles aux deux bouts) reste fidèle à la maquette
+// pour un vote pas encore tenu — pas encore exercé par une donnée réelle (VoteStep n'a
+// pas de champ "à venir").
+interface Props {
+  dotLeft?: boolean;
+  dotRight?: boolean;
+  estimated?: boolean;
+}
+
+const { dotLeft = false, dotRight = false, estimated = false } = Astro.props;
+const hasAnyDot = dotLeft || dotRight;
+---
+
+<span
+  class={`vote-timeline-indicator ${!hasAnyDot && !estimated ? 'vote-timeline-indicator--start' : ''} ${estimated ? 'vote-timeline-indicator--estimated' : ''}`}
+  data-dot-left={dotLeft ? '' : undefined}
+  data-dot-right={dotRight ? '' : undefined}
+  aria-hidden="true"
+></span>
+
+<style>
+  .vote-timeline-indicator {
+    position: relative;
+    display: block;
+    height: 2px;
+    width: calc(100% + var(--space-4xs));
+    margin-inline: calc(var(--space-4xs) / -2);
+    background: var(--color-border-neutral-secondary);
+  }
+
+  .vote-timeline-indicator--start {
+    background: var(--color-border-neutral-inverse-disabled);
+  }
+
+  .vote-timeline-indicator--estimated {
+    background: none;
+    border-top: 2px dashed var(--color-border-neutral-inverse-secondary);
+  }
+
+  .vote-timeline-indicator[data-dot-left]::before,
+  .vote-timeline-indicator[data-dot-right]::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 10px;
+    height: 10px;
+    border-radius: var(--radius-full);
+    background: var(--color-brand-darker);
+    border: 2px solid var(--color-border-neutral-secondary);
+  }
+
+  .vote-timeline-indicator[data-dot-left]::before {
+    left: 0;
+    transform: translate(-50%, -50%);
+  }
+
+  .vote-timeline-indicator[data-dot-right]::after {
+    right: 0;
+    transform: translate(50%, -50%);
+  }
+</style>

@@ -1,0 +1,167 @@
+---
+// "Votes timeline" — composée d'instances de "VoteTimelineToggle" (Figma node
+// 2976:8305, états "Default"/"Focused"/"Estimated") posées côte à côte, chacune
+// surmontée d'un VoteTimelineIndicator (node 2976:8354) — voir
+// "MD plans/Hemi_Plan_Votes_Hemicycle.md" §2. Ne garde, parmi les étapes du JSON de la
+// loi, que celles dont `type` commence par "vote_" (exclut dépôt, transmission,
+// accord CMP, contrôle de constitutionnalité, promulgation). Chaque item pointe vers
+// un VoteStep via (chambre, date).
+// "Focused" (sélectionné) = box remplie (overlay-light-20, sans bordure) ; "Default"
+// (non sélectionné) = box juste contourée (bordure neutral/secondary 0.5px). Le texte
+// est blanc dans les deux cas, tronqué avec ellipsis (une seule ligne).
+// "Estimated" (vote pas encore tenu, opacity 50% + indicator pointillé) n'est pas
+// implémenté ici : VoteStep n'a pas de champ pour ça — voir VoteTimelineIndicator.astro.
+// Chaque item porte une pastille sur son bord droit sauf le dernier (rien à rejoindre
+// après lui) — voir le commentaire de VoteTimelineIndicator.astro pour le choix.
+import type { VoteStep } from '../data/votes-mock';
+import VoteTimelineIndicator from './VoteTimelineIndicator.astro';
+
+interface Etape {
+  date: string;
+  chambre: string;
+  type: string;
+}
+
+interface Props {
+  etapes: Etape[];
+  votes: VoteStep[];
+  activeVoteId: string;
+}
+
+const { etapes, votes, activeVoteId } = Astro.props;
+
+const chambreLabels: Record<string, string> = {
+  senat: 'Sénat',
+  assemblee_nationale: 'Assemblée nationale',
+};
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+const items = etapes
+  .filter((etape) => etape.type.startsWith('vote_'))
+  .map((etape) => votes.find((vote) => vote.chambre === etape.chambre && vote.date === etape.date))
+  .filter((vote): vote is VoteStep => Boolean(vote));
+---
+
+<div class="votes-timeline">
+  {items.map((vote, index) => (
+    <button
+      type="button"
+      class="vote-timeline-toggle"
+      style={`z-index:${items.length - index}`}
+      data-vote-id={vote.id}
+      data-active={vote.id === activeVoteId ? 'true' : 'false'}
+      data-chambre={vote.chambre}
+      data-total-sieges={vote.totalSieges}
+      data-pour={vote.pour}
+      data-contre={vote.contre}
+      data-abstention={vote.abstention}
+      data-non-votant={vote.nonVotant}
+      data-is-donnee-reelle={vote.isDonneeReelle ? 'true' : 'false'}
+      data-date={vote.date}
+      data-source={vote.source ?? ''}
+    >
+      <VoteTimelineIndicator dotRight={index < items.length - 1} />
+      <span class="vote-timeline-toggle__box">
+        <span class="vote-timeline-toggle__label">Vote {index + 1}</span>
+        <span class="vote-timeline-toggle__meta">
+          {formatDate(vote.date)} - {chambreLabels[vote.chambre] ?? vote.chambre}
+        </span>
+      </span>
+    </button>
+  ))}
+</div>
+
+<style>
+  .votes-timeline {
+    display: flex;
+    gap: var(--space-4xs);
+    width: 100%;
+    /* overflow-x: auto force le calcul de overflow-y à "auto" aussi (règle CSS2.1) :
+       sans ce padding-top, la moitié haute des pastilles (qui débordent au-dessus de
+       la ligne de 2px) se retrouve clippée par ce clip vertical involontaire. */
+    padding-top: var(--space-3xs);
+    margin-top: calc(var(--space-3xs) * -1);
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border-neutral-secondary) transparent;
+  }
+
+  .votes-timeline::-webkit-scrollbar {
+    height: 2px;
+  }
+
+  .votes-timeline::-webkit-scrollbar-track,
+  .votes-timeline::-webkit-scrollbar-track-piece,
+  .votes-timeline::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  .votes-timeline::-webkit-scrollbar-thumb {
+    background: var(--color-border-neutral-secondary);
+    border-radius: var(--radius-full);
+  }
+
+  .votes-timeline::-webkit-scrollbar-button,
+  .votes-timeline::-webkit-scrollbar-button:single-button,
+  .votes-timeline::-webkit-scrollbar-button:start,
+  .votes-timeline::-webkit-scrollbar-button:end {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  .vote-timeline-toggle {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+    flex: 0 0 260px;
+    width: 260px;
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+    text-align: left;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  .vote-timeline-toggle__box {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: var(--space-3xs) var(--space-2xs);
+    border: 0.5px solid var(--color-border-neutral-secondary);
+    border-radius: var(--radius-extra-small);
+  }
+
+  .vote-timeline-toggle[data-active='true'] .vote-timeline-toggle__box {
+    background: var(--color-overlay-light-20);
+    border-color: transparent;
+  }
+
+  .vote-timeline-toggle__label {
+    /* "Heading/H4" du design system : police heading, taille body-small (14px) —
+       pas de token --text-h4 dédié, voir TimelineItem.astro pour le même usage. */
+    overflow: hidden;
+    font-family: var(--font-heading);
+    font-size: var(--text-body-small);
+    font-weight: 400;
+    color: var(--color-text-white);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .vote-timeline-toggle__meta {
+    overflow: hidden;
+    font-family: var(--font-body);
+    font-size: var(--text-body-small);
+    color: var(--color-text-white);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+</style>

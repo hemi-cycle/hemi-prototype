@@ -18,7 +18,10 @@ import ArgumentsList from '../../components/ArgumentsList.astro';
 import KeyNumber from '../../components/KeyNumber.astro';
 import WikiLink from '../../components/WikiLink.astro';
 import Timeline from '../../components/Timeline.astro';
+import VotesTimeline from '../../components/VotesTimeline.astro';
+import HemicycleChart from '../../components/HemicycleChart.astro';
 import loi from '../../data/loi-duplomb-menonville.json';
+import { votesMock } from '../../data/votes-mock';
 
 export function getStaticPaths() {
   return [{ params: { id: loi.id } }];
@@ -26,11 +29,14 @@ export function getStaticPaths() {
 
 const base = import.meta.env.BASE_URL;
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-}
+const chambreLabels: Record<string, string> = {
+  senat: 'Sénat',
+  assemblee_nationale: 'Assemblée nationale',
+};
 
-const vote = loi.votes[0];
+// Vote actif par défaut à l'affichage : le dernier de la liste (ici la seule donnée
+// réellement sourcée — voir "MD plans/Hemi_Plan_Votes_Hemicycle.md" §1).
+const activeVote = votesMock[votesMock.length - 1];
 ---
 
 <MobileLayout title={loi.titre_usuel}>
@@ -90,23 +96,32 @@ const vote = loi.votes[0];
 
     <ArgumentsList pour={loi.arguments_pour} contre={loi.arguments_contre} />
 
-    <section class="card">
-      <h2 class="section__title">Résultat du vote</h2>
-      <div class="card__body">
-        <p class="vote__meta">{vote.type} · {vote.chambre === 'assemblee_nationale' ? 'Assemblée nationale' : vote.chambre} · {formatDate(vote.date)}</p>
-        <div class="vote__numbers">
-          <KeyNumber value={vote.pour} label="Pour" state={vote.pour > vote.contre ? 'success' : 'default'} />
-          <KeyNumber value={vote.contre} label="Contre" state={vote.contre > vote.pour ? 'failure' : 'default'} />
-          <KeyNumber value={vote.abstention} label="Abstentions" />
+    <section class="votes-card">
+      <VotesTimeline etapes={loi.etapes} votes={votesMock} activeVoteId={activeVote.id} />
+      <HemicycleChart votes={votesMock} activeVoteId={activeVote.id} />
+
+      <div class="votes-footer">
+        <div class="votes-footer__title">
+          <p id="vote-chambre-title">{chambreLabels[activeVote.chambre]}</p>
         </div>
-        <a href={vote.source} target="_blank" rel="noopener noreferrer" class="vote__source">
-          Voir le détail du vote
-          <Icon name="arrow-up-right" size={14} />
+        <div class="votes-footer__numbers">
+          <KeyNumber theme="on-dark" valueId="vote-pour" value={activeVote.pour} label="Pour" state={activeVote.pour > activeVote.contre ? 'success' : 'default'} />
+          <KeyNumber theme="on-dark" valueId="vote-contre" value={activeVote.contre} label="Contre" state={activeVote.contre > activeVote.pour ? 'failure' : 'default'} />
+          <KeyNumber theme="on-dark" valueId="vote-abstention" value={activeVote.abstention} label="Abstentions" />
+        </div>
+        <a
+          href={activeVote.source || undefined}
+          target={activeVote.source ? '_blank' : undefined}
+          rel={activeVote.source ? 'noopener noreferrer' : undefined}
+          class="votes-footer__button"
+          id="vote-source"
+        >
+          {activeVote.source ? 'Voir + en détails' : 'Donnée provisoire — à confirmer'}
         </a>
       </div>
-    </section>
 
-    <WikiLink question="Combien faut-il de votes pour qu'une loi passe ?" href={`${base}/antiseche`} />
+      <WikiLink question="Combien faut-il de votes pour qu'une loi passe ?" href={`${base}/antiseche`} />
+    </section>
 
     <section class="timeline-section">
       <h2 class="timeline-section__title">On rembobine !</h2>
@@ -133,6 +148,96 @@ const vote = loi.votes[0];
     </section>
   </div>
 </MobileLayout>
+
+<script>
+  // Seul endroit du prototype qui nécessite du JS côté client — voir
+  // "MD plans/Hemi_Plan_Votes_Hemicycle.md" §6. La géométrie des points de
+  // l'hémicycle est calculée une fois au build (voir HemicycleChart.astro) ; ce
+  // script se contente, au clic sur une étape de VotesTimeline, de changer
+  // l'attribut `data-vote` des points déjà positionnés et de mettre à jour les
+  // textes (chart label, footer "Résultat du vote"). Pas de recalcul de layout.
+  import { categoryForIndex, type VoteCategory } from '../../lib/hemicycle-layout';
+
+  const chambreLabels: Record<string, string> = {
+    senat: 'Sénat',
+    assemblee_nationale: 'Assemblée nationale',
+  };
+
+  function seuilMajorite(totalSieges: number) {
+    return Math.floor(totalSieges / 2) + 1;
+  }
+
+  const timelineItems = document.querySelectorAll<HTMLButtonElement>('.vote-timeline-toggle');
+  const svgs = document.querySelectorAll<SVGSVGElement>('.hemicycle__svg');
+  const seatsLabel = document.getElementById('hemicycle-seats');
+  const majorityLabel = document.getElementById('hemicycle-majority');
+  const summary = document.getElementById('hemicycle-summary');
+  const chambreTitle = document.getElementById('vote-chambre-title');
+  const votePour = document.getElementById('vote-pour');
+  const voteContre = document.getElementById('vote-contre');
+  const voteAbstention = document.getElementById('vote-abstention');
+  const voteSource = document.getElementById('vote-source') as HTMLAnchorElement | null;
+
+  timelineItems.forEach((item) => {
+    item.addEventListener('click', () => {
+      const { chambre = '', totalSieges, pour, contre, abstention, nonVotant, source } = item.dataset;
+      const total = Number(totalSieges);
+      const counts = {
+        pour: Number(pour),
+        contre: Number(contre),
+        abstention: Number(abstention),
+        nonVotant: Number(nonVotant),
+      };
+
+      timelineItems.forEach((other) => {
+        other.dataset.active = other === item ? 'true' : 'false';
+      });
+
+      svgs.forEach((svg) => {
+        const isMatch = svg.dataset.chambre === chambre;
+        svg.hidden = !isMatch;
+        if (isMatch) {
+          svg.querySelectorAll<SVGRectElement>('.hemicycle__dot').forEach((dot, index) => {
+            const category: VoteCategory = categoryForIndex(index, counts);
+            dot.setAttribute('data-vote', category);
+          });
+        }
+      });
+
+      if (seatsLabel) seatsLabel.textContent = String(total);
+      if (majorityLabel) majorityLabel.textContent = `Majorité à ${seuilMajorite(total)}`;
+      if (summary) {
+        summary.textContent = `${counts.pour} pour, ${counts.contre} contre, ${counts.abstention} abstentions sur ${total} sièges.`;
+      }
+
+      if (chambreTitle) chambreTitle.textContent = chambreLabels[chambre] ?? chambre;
+
+      if (votePour) {
+        votePour.textContent = String(counts.pour);
+        votePour.style.color = counts.pour > counts.contre ? 'var(--color-success-on-dark)' : 'var(--color-text-white)';
+      }
+      if (voteContre) {
+        voteContre.textContent = String(counts.contre);
+        voteContre.style.color = counts.contre > counts.pour ? 'var(--color-error-on-dark)' : 'var(--color-text-white)';
+      }
+      if (voteAbstention) voteAbstention.textContent = String(counts.abstention);
+
+      if (voteSource) {
+        if (source) {
+          voteSource.href = source;
+          voteSource.target = '_blank';
+          voteSource.rel = 'noopener noreferrer';
+          voteSource.textContent = 'Voir + en détails';
+        } else {
+          voteSource.removeAttribute('href');
+          voteSource.removeAttribute('target');
+          voteSource.removeAttribute('rel');
+          voteSource.textContent = 'Donnée provisoire — à confirmer';
+        }
+      }
+    });
+  });
+</script>
 
 <style>
   .hero {
@@ -198,13 +303,6 @@ const vote = loi.votes[0];
     background: var(--color-bg-neutral-primary);
     border-radius: var(--radius-small);
     padding: var(--space-sm) 0 var(--space-none);
-  }
-
-  .card__body {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2xs);
-    padding: 0 var(--space-xs);
   }
 
   .title-block {
@@ -355,31 +453,65 @@ const vote = loi.votes[0];
     display: none;
   }
 
-  .vote__meta {
-    font-family: var(--font-body);
-    font-size: var(--text-body-xsmall);
-    color: var(--color-text-dark-grey);
-    margin: 0;
-  }
-
-  .vote__numbers {
+  .votes-card {
     display: flex;
-    gap: 1px;
-    padding: 1px;
-    background: var(--color-bg-neutral-tertiary);
-    border-radius: var(--radius-extra-small);
-    overflow: hidden;
+    flex-direction: column;
+    gap: var(--space-lg);
+    background: var(--color-brand-darker);
+    border-radius: var(--radius-small);
+    padding: var(--space-xl) var(--space-xs);
   }
 
-  .vote__source {
-    display: inline-flex;
+  .votes-footer {
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: var(--space-4xs);
-    font-family: var(--font-accent);
-    font-size: var(--text-body-xsmall);
+    justify-content: center;
+    width: 100%;
+  }
+
+  .votes-footer__title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: var(--space-4xs) var(--space-3xs);
+    background: var(--color-overlay-light-20);
+    border: 0.5px solid var(--color-brand-darker);
+    border-radius: var(--radius-extra-small);
+  }
+
+  .votes-footer__title p {
+    font-family: var(--font-heading);
+    font-size: var(--text-body-small);
+    font-weight: 400;
+    color: var(--color-text-white);
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  .votes-footer__numbers {
+    display: flex;
+    align-items: center;
+    gap: 1px;
+    width: 100%;
+  }
+
+  .votes-footer__button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 39px;
+    background: var(--color-overlay-light-20);
+    border: 0.5px solid var(--color-brand-darker);
+    border-radius: var(--radius-extra-small);
+    font-family: var(--font-body);
+    font-size: var(--text-body-medium);
     font-weight: 500;
-    color: var(--color-text-brand);
+    color: var(--color-text-white);
     text-decoration: none;
+    text-align: center;
   }
 
   .sources {

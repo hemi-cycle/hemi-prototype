@@ -3,27 +3,40 @@
 // (node 2597:23663) et de la section vote de la page détail (node 2583:18130).
 // Seule la taille "compact" (55px) a été observée dans le fichier ; "comfortable"
 // est une extrapolation raisonnable, à confirmer visuellement si un jour utilisée.
+// Le thème "on-dark" (fond overlay-light-20, texte blanc) correspond à l'usage dans
+// le "Chart Container" brand-darker du node 2583:18130 ; "on-light" (défaut) à
+// l'usage sur les cartes claires du reste de la page.
 export type KeyNumberState = 'default' | 'success' | 'failure';
 export type KeyNumberSize = 'compact' | 'comfortable';
+export type KeyNumberTheme = 'on-light' | 'on-dark';
 
 interface Props {
   value: number | string;
   label: string;
   state?: KeyNumberState;
   size?: KeyNumberSize;
+  theme?: KeyNumberTheme;
+  valueId?: string;
 }
 
-const { value, label, state = 'default', size = 'compact' } = Astro.props;
+const { value, label, state = 'default', size = 'compact', theme = 'on-light', valueId } = Astro.props;
 
-const stateColor: Record<KeyNumberState, string> = {
-  default: 'var(--color-text-default)',
-  success: 'var(--color-success-on-light)',
-  failure: 'var(--color-error-on-light)',
+const stateColor: Record<KeyNumberTheme, Record<KeyNumberState, string>> = {
+  'on-light': {
+    default: 'var(--color-text-default)',
+    success: 'var(--color-success-on-light)',
+    failure: 'var(--color-error-on-light)',
+  },
+  'on-dark': {
+    default: 'var(--color-text-white)',
+    success: 'var(--color-success-on-dark)',
+    failure: 'var(--color-error-on-dark)',
+  },
 };
 ---
 
-<div class={`key-number key-number--${size}`}>
-  <p class="key-number__value" style={`color:${stateColor[state]}`}>{value}</p>
+<div class={`key-number key-number--${size} key-number--${theme}`}>
+  <p class="key-number__value" id={valueId} style={`color:${stateColor[theme][state]}`}>{value}</p>
   <p class="key-number__label">{label}</p>
 </div>
 
@@ -34,7 +47,18 @@ const stateColor: Record<KeyNumberState, string> = {
     flex: 1;
     min-width: 0;
     border-radius: var(--radius-extra-small);
+  }
+
+  .key-number--on-light {
     background: var(--color-bg-neutral-primary);
+  }
+
+  .key-number--on-dark {
+    background: var(--color-overlay-light-20);
+  }
+
+  .key-number--on-dark .key-number__label {
+    color: var(--color-text-white);
   }
 
   .key-number--compact {
