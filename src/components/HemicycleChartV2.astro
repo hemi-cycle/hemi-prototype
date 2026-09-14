@@ -1,0 +1,258 @@
+---
+// Expérimentation "V2" du dataviz hémicycle, posée AU-DESSUS de HemicycleChart.astro
+// pour comparaison (voir CLAUDE.md discussion) — ne remplace rien. Toujours 1 point =
+// 1 siège réel, mais deux différences avec la V1 :
+// 1. Assignation des catégories par balayage global gauche->droite (hemicycle-layout-v2.ts)
+//    au lieu d'une répartition proportionnelle rangée par rangée : donne un bloc plein
+//    par catégorie, plus proche d'une vraie photo d'hémicycle.
+// 2. Ajoute ce qui manquait à la V1 côté lisibilité : une légende (obligatoire dès
+//    qu'il y a >= 2 séries) et un <title> par point pour un tooltip natif au survol —
+//    "1 point = 1 siège" doit être inspectable, pas seulement décoratif.
+import type { VoteStep } from '../data/votes-mock';
+import { generateHemicycleLayoutV2 } from '../lib/hemicycle-layout-v2';
+import { DOT_SIZE } from '../lib/hemicycle-layout';
+
+interface Props {
+  votes: VoteStep[];
+  activeVoteId: string;
+}
+
+const { votes, activeVoteId } = Astro.props;
+
+const activeVote = votes.find((v) => v.id === activeVoteId) ?? votes[votes.length - 1];
+
+function seuilMajorite(totalSieges: number) {
+  return Math.floor(totalSieges / 2) + 1;
+}
+
+const byChambre = new Map<string, VoteStep[]>();
+for (const vote of votes) {
+  byChambre.set(vote.chambre, [...(byChambre.get(vote.chambre) ?? []), vote]);
+}
+
+const chambreCharts = Array.from(byChambre.entries()).map(([chambre, steps]) => {
+  const totalSieges = steps[steps.length - 1].totalSieges;
+  const isActive = chambre === activeVote.chambre;
+  const initialCounts = isActive ? activeVote : steps[steps.length - 1];
+  const layout = generateHemicycleLayoutV2(totalSieges, initialCounts);
+  return { chambre, layout, isActive };
+});
+
+const legendItems = [
+  { category: 'pour', label: 'Pour', count: activeVote.pour },
+  { category: 'contre', label: 'Contre', count: activeVote.contre },
+  { category: 'abstention', label: 'Abstention', count: activeVote.abstention },
+  { category: 'non-votant', label: 'Non-votant', count: activeVote.nonVotant },
+] as const;
+---
+
+<div class="hemicycle-v2">
+  <p class="hemicycle-v2__label">V2 — balayage global (expérimentation)</p>
+
+  <div class="hemicycle-v2__stack">
+    <div class="hemicycle-v2__chart">
+    {chambreCharts.map((chart) => (
+      <svg
+        class="hemicycle-v2__svg"
+        data-chambre={chart.chambre}
+        viewBox={`0 0 ${chart.layout.width} ${chart.layout.height}`}
+        width={chart.layout.width}
+        height={chart.layout.height}
+        hidden={!chart.isActive}
+        role="img"
+        aria-label={`Hémicycle : ${activeVote.pour} pour, ${activeVote.contre} contre, ${activeVote.abstention} abstentions, ${activeVote.nonVotant} non-votants sur ${activeVote.totalSieges} sièges.`}
+      >
+        {chart.layout.points.map((point, index) => (
+          <rect
+            class="hemicycle-v2__dot"
+            data-index={index}
+            data-vote={point.category}
+            x={point.x - DOT_SIZE / 2}
+            y={point.y - DOT_SIZE / 2}
+            width={DOT_SIZE}
+            height={DOT_SIZE}
+          >
+            <title>Siège {index + 1} — {point.category}</title>
+          </rect>
+        ))}
+      </svg>
+    ))}
+    </div>
+
+    <div class="hemicycle-v2__center-label">
+      <p class="hemicycle-v2__seats" id="hemicycle-v2-seats">{activeVote.totalSieges}</p>
+      <p class="hemicycle-v2__caption">sièges</p>
+      <p class="hemicycle-v2__majority" id="hemicycle-v2-majority">Majorité à {seuilMajorite(activeVote.totalSieges)}</p>
+    </div>
+  </div>
+
+  <ul class="hemicycle-v2__legend" id="hemicycle-v2-legend">
+    {legendItems.map((item) => (
+      <li class="hemicycle-v2__legend-item">
+        <span class={`hemicycle-v2__legend-swatch hemicycle-v2__legend-swatch--${item.category}`} aria-hidden="true"></span>
+        <span class="hemicycle-v2__legend-text">{item.label} <strong data-vote-count={item.category}>{item.count}</strong></span>
+      </li>
+    ))}
+  </ul>
+</div>
+
+<style>
+  .hemicycle-v2 {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: var(--space-2xs);
+  }
+
+  .hemicycle-v2__label {
+    font-family: var(--font-body);
+    font-size: var(--text-body-xsmall);
+    font-weight: 500;
+    color: var(--color-text-white);
+    opacity: 0.7;
+    margin: 0;
+    text-align: center;
+  }
+
+  .hemicycle-v2__stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3xs);
+    width: 100%;
+    background: white;
+    border-radius: var(--radius-full) var(--radius-full) 20px 20px;
+    overflow: hidden;
+  }
+
+  .hemicycle-v2__chart {
+    box-sizing: border-box;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    width: 100%;
+    /* box-sizing:border-box est nécessaire ici : sans lui (comportement par défaut du
+       navigateur, aucun reset global box-sizing dans le projet), le padding s'AJOUTE
+       à width:100% au lieu d'être soustrait du contenu — la carte devient plus large
+       que son parent .hemicycle-v2__stack, d'où le padding "sans effet" et le
+       dataviz qui débordait de la carte. */
+    padding: var(--space-sm);
+  }
+
+  .hemicycle-v2__svg {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    min-width: 0;
+  }
+
+  .hemicycle-v2__svg[hidden] {
+    display: none;
+  }
+
+  .hemicycle-v2__dot[data-vote='pour'] {
+    fill: var(--color-success-on-light);
+    clip-path: circle(50% at 50% 50%);
+  }
+
+  .hemicycle-v2__dot[data-vote='contre'] {
+    fill: var(--color-error-on-light);
+    clip-path: none;
+  }
+
+  .hemicycle-v2__dot[data-vote='abstention'] {
+    fill: var(--color-warning-on-light);
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+  }
+
+  .hemicycle-v2__dot[data-vote='non-votant'] {
+    fill: white;
+    stroke: var(--color-border-neutral-secondary);
+    stroke-width: 1;
+    clip-path: circle(50% at 50% 50%);
+  }
+
+  .hemicycle-v2__center-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 0 var(--space-sm) var(--space-sm);
+  }
+
+  .hemicycle-v2__seats {
+    font-family: var(--font-heading);
+    font-size: var(--text-h2);
+    font-weight: 400;
+    color: var(--color-text-default);
+    margin: 0;
+  }
+
+  .hemicycle-v2__caption {
+    font-family: var(--font-body);
+    font-size: var(--text-body-small);
+    color: var(--color-text-default);
+    margin: 0;
+  }
+
+  .hemicycle-v2__majority {
+    font-family: var(--font-body);
+    font-size: var(--text-body-xsmall);
+    color: var(--color-text-dark-grey);
+    margin: var(--space-4xs) 0 0;
+  }
+
+  .hemicycle-v2__legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-2xs) var(--space-sm);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .hemicycle-v2__legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-4xs);
+  }
+
+  .hemicycle-v2__legend-swatch {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    flex-shrink: 0;
+  }
+
+  .hemicycle-v2__legend-swatch--pour {
+    background: var(--color-success-on-light);
+    border-radius: 50%;
+  }
+
+  .hemicycle-v2__legend-swatch--contre {
+    background: var(--color-error-on-light);
+  }
+
+  .hemicycle-v2__legend-swatch--abstention {
+    background: var(--color-warning-on-light);
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+  }
+
+  .hemicycle-v2__legend-swatch--non-votant {
+    background: white;
+    border: 1px solid var(--color-border-neutral-secondary);
+    border-radius: 50%;
+  }
+
+  .hemicycle-v2__legend-text {
+    font-family: var(--font-body);
+    font-size: var(--text-body-xsmall);
+    color: var(--color-text-white);
+  }
+
+  .hemicycle-v2__legend-text strong {
+    font-weight: 700;
+  }
+</style>

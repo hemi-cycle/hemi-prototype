@@ -20,6 +20,7 @@ import WikiLink from '../../components/WikiLink.astro';
 import Timeline from '../../components/Timeline.astro';
 import VotesTimeline from '../../components/VotesTimeline.astro';
 import HemicycleChart from '../../components/HemicycleChart.astro';
+import HemicycleChartV2 from '../../components/HemicycleChartV2.astro';
 import loi from '../../data/loi-duplomb-menonville.json';
 import { votesMock } from '../../data/votes-mock';
 
@@ -98,6 +99,7 @@ const activeVote = votesMock[votesMock.length - 1];
 
     <section class="votes-card">
       <VotesTimeline etapes={loi.etapes} votes={votesMock} activeVoteId={activeVote.id} />
+      <HemicycleChartV2 votes={votesMock} activeVoteId={activeVote.id} />
       <HemicycleChart votes={votesMock} activeVoteId={activeVote.id} />
 
       <div class="votes-footer">
@@ -156,7 +158,8 @@ const activeVote = votesMock[votesMock.length - 1];
   // script se contente, au clic sur une étape de VotesTimeline, de changer
   // l'attribut `data-vote` des points déjà positionnés et de mettre à jour les
   // textes (chart label, footer "Résultat du vote"). Pas de recalcul de layout.
-  import { categoryForIndex, type VoteCategory } from '../../lib/hemicycle-layout';
+  import { categorizeSeats } from '../../lib/hemicycle-layout';
+  import { categorizeSeatsByWedge } from '../../lib/hemicycle-layout-v2';
 
   const chambreLabels: Record<string, string> = {
     senat: 'Sénat',
@@ -173,6 +176,14 @@ const activeVote = votesMock[votesMock.length - 1];
   const majorityLabel = document.getElementById('hemicycle-majority');
   const summary = document.getElementById('hemicycle-summary');
   const chambreTitle = document.getElementById('vote-chambre-title');
+  // V2 (expérimentation, HemicycleChartV2.astro) : mêmes bascules chambre/labels que
+  // la V1 ci-dessus, mais catégorisation via l'algo "balayage global" (voir
+  // hemicycle-layout-v2.ts), donc une boucle séparée plutôt que de réutiliser celle
+  // de la V1.
+  const svgsV2 = document.querySelectorAll<SVGSVGElement>('.hemicycle-v2__svg');
+  const seatsLabelV2 = document.getElementById('hemicycle-v2-seats');
+  const majorityLabelV2 = document.getElementById('hemicycle-v2-majority');
+  const legendV2 = document.getElementById('hemicycle-v2-legend');
   const votePour = document.getElementById('vote-pour');
   const voteContre = document.getElementById('vote-contre');
   const voteAbstention = document.getElementById('vote-abstention');
@@ -197,9 +208,9 @@ const activeVote = votesMock[votesMock.length - 1];
         const isMatch = svg.dataset.chambre === chambre;
         svg.hidden = !isMatch;
         if (isMatch) {
+          const categories = categorizeSeats(total, counts);
           svg.querySelectorAll<SVGRectElement>('.hemicycle__dot').forEach((dot, index) => {
-            const category: VoteCategory = categoryForIndex(index, counts);
-            dot.setAttribute('data-vote', category);
+            dot.setAttribute('data-vote', categories[index]);
           });
         }
       });
@@ -208,6 +219,39 @@ const activeVote = votesMock[votesMock.length - 1];
       if (majorityLabel) majorityLabel.textContent = `Majorité à ${seuilMajorite(total)}`;
       if (summary) {
         summary.textContent = `${counts.pour} pour, ${counts.contre} contre, ${counts.abstention} abstentions sur ${total} sièges.`;
+      }
+
+      svgsV2.forEach((svg) => {
+        const isMatch = svg.dataset.chambre === chambre;
+        svg.hidden = !isMatch;
+        if (isMatch) {
+          const categoriesV2 = categorizeSeatsByWedge(total, counts);
+          svg.setAttribute(
+            'aria-label',
+            `Hémicycle : ${counts.pour} pour, ${counts.contre} contre, ${counts.abstention} abstentions, ${counts.nonVotant} non-votants sur ${total} sièges.`
+          );
+          svg.querySelectorAll<SVGRectElement>('.hemicycle-v2__dot').forEach((dot, index) => {
+            const category = categoriesV2[index];
+            dot.setAttribute('data-vote', category);
+            const title = dot.querySelector('title');
+            if (title) title.textContent = `Siège ${index + 1} — ${category}`;
+          });
+        }
+      });
+
+      if (seatsLabelV2) seatsLabelV2.textContent = String(total);
+      if (majorityLabelV2) majorityLabelV2.textContent = `Majorité à ${seuilMajorite(total)}`;
+      if (legendV2) {
+        const counters: Record<string, number> = {
+          pour: counts.pour,
+          contre: counts.contre,
+          abstention: counts.abstention,
+          'non-votant': counts.nonVotant,
+        };
+        legendV2.querySelectorAll<HTMLElement>('[data-vote-count]').forEach((el) => {
+          const key = el.dataset.voteCount ?? '';
+          if (key in counters) el.textContent = String(counters[key]);
+        });
       }
 
       if (chambreTitle) chambreTitle.textContent = chambreLabels[chambre] ?? chambre;
@@ -475,6 +519,7 @@ const activeVote = votesMock[votesMock.length - 1];
     align-items: center;
     justify-content: center;
     width: 100%;
+    min-width: 0;
     padding: var(--space-4xs) var(--space-3xs);
     background: var(--color-overlay-light-20);
     border: 0.5px solid var(--color-brand-darker);
@@ -482,12 +527,18 @@ const activeVote = votesMock[votesMock.length - 1];
   }
 
   .votes-footer__title p {
+    /* min-width:0 est nécessaire : un enfant flex refuse par défaut de rétrécir
+       sous sa largeur de contenu (min-width:auto), donc "Assemblée nationale" en
+       nowrap débordait de la pilule au lieu de s'y tronquer. */
+    min-width: 0;
+    overflow: hidden;
     font-family: var(--font-heading);
     font-size: var(--text-body-small);
     font-weight: 400;
     color: var(--color-text-white);
     margin: 0;
     white-space: nowrap;
+    text-overflow: ellipsis;
   }
 
   .votes-footer__numbers {

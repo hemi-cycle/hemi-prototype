@@ -47,6 +47,8 @@ const chambreCharts = Array.from(byChambre.entries()).map(([chambre, steps]) => 
         class="hemicycle__svg"
         data-chambre={chart.chambre}
         viewBox={`0 0 ${chart.layout.width} ${chart.layout.height}`}
+        width={chart.layout.width}
+        height={chart.layout.height}
         hidden={!chart.isActive}
         aria-hidden="true"
       >
@@ -91,13 +93,27 @@ const chambreCharts = Array.from(byChambre.entries()).map(([chambre, steps]) => 
     width: 100%;
     padding: var(--space-md) var(--space-sm) 0;
     background: white;
-    border-radius: 20px 20px var(--radius-full) var(--radius-full) / 20px 20px 1000px 1000px;
+    /* Ordre CSS : haut-gauche, haut-droit, bas-droit, bas-gauche. Les coins du HAUT
+       doivent être pleinement arrondis (silhouette en dôme, node Figma 2583:18159) ;
+       c'était inversé avant (bas totalement arrondi) — pile là où les rangées les
+       plus larges de l'hémicycle touchent le bord, d'où les points qui semblaient
+       déborder. overflow:hidden en garde-fou pour clipper au dôme dans tous les cas. */
+    border-radius: var(--radius-full) var(--radius-full) 20px 20px;
+    overflow: hidden;
   }
 
   .hemicycle__svg {
     display: block;
     width: 100%;
+    max-width: 100%;
     height: auto;
+    /* min-width:0 : sans ça, un <svg> sans attributs width/height explicites peut
+       avoir une taille intrinsèque ambiguë selon le navigateur (parfois ~300px de
+       large par défaut), et l'auto-minimum des enfants flex empêche alors le
+       width:100% de le faire rétrécir — d'où le dataviz qui débordait largement de
+       son fond blanc. Les attributs width/height posés sur le <svg> (voir le
+       markup) fixent le vrai problème ; ce min-width:0 est une garde-fou en plus. */
+    min-width: 0;
   }
 
   .hemicycle__svg[hidden] {

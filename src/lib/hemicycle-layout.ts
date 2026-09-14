@@ -36,7 +36,9 @@ function rowCountForRadius(radius: number): number {
 }
 
 // Rangées (rayon, nombre de points), du centre vers l'extérieur, jusqu'à `total`.
-function generateRows(total: number): { radius: number; count: number }[] {
+// Exportée pour être réutilisée par hemicycle-layout-v2.ts (même géométrie de
+// rangées, algorithme d'assignation des catégories différent).
+export function generateRows(total: number): { radius: number; count: number }[] {
   const rows: { radius: number; count: number }[] = [];
   let remaining = total;
   let radius = INNER_RADIUS;
@@ -51,14 +53,60 @@ function generateRows(total: number): { radius: number; count: number }[] {
   return rows;
 }
 
-// Attribution pour/contre/abstention/non-votant : arbitraire (remplissage séquentiel
-// par catégorie), faute de données réelles par élu·e. Ne pas laisser entendre qu'un
-// point précis correspond à un·e élu·e précis·e — voir plan §3.
-export function categoryForIndex(index: number, counts: VoteCounts): VoteCategory {
-  if (index < counts.pour) return 'pour';
-  if (index < counts.pour + counts.contre) return 'contre';
-  if (index < counts.pour + counts.contre + counts.abstention) return 'abstention';
-  return 'non-votant';
+// Attribution pour/contre/abstention/non-votant : arbitraire (aucune donnée réelle
+// par élu·e pour l'instant — ça viendra avec CIVIX), mais PAS aléatoire dans sa forme :
+// chaque rangée est répartie proportionnellement aux 4 parts, dans l'ordre gauche→
+// droite pour | abstention | non-votant | contre. Ça reproduit la disposition d'un
+// vrai hémicycle vue en photo (bloc "pour" à gauche, bloc "contre" à droite, les
+// non-exprimés au centre) au lieu d'un remplissage séquentiel rangée par rangée qui
+// donnait des anneaux concentriques d'une seule couleur — voir Figma node 2583:18130
+// (référence "vraie donnée" avec 316/223/25/13 sur 577). Ne pas laisser entendre
+// qu'un point précis correspond à un·e élu·e précis·e — voir plan §3.
+//
+// Astuce anti-dérive d'arrondi : pour chaque catégorie, on arrondit le cumul idéal
+// (rowIndex+1 rangées) plutôt que chaque rangée indépendamment, et on prend la
+// différence avec le cumul déjà distribué. Le compte total par catégorie retombe
+// alors exactement sur `counts`, sans accumuler d'écart au fil des rangées.
+export function categorizeSeats(total: number, counts: VoteCounts): VoteCategory[] {
+  const rows = generateRows(total);
+  const pourRatio = counts.pour / total;
+  const contreRatio = counts.contre / total;
+  const abstentionRatio = counts.abstention / total;
+
+  const categories: VoteCategory[] = [];
+  let seatsSoFar = 0;
+  let pourCumTarget = 0;
+  let contreCumTarget = 0;
+  let abstentionCumTarget = 0;
+  let pourAssigned = 0;
+  let contreAssigned = 0;
+  let abstentionAssigned = 0;
+
+  for (const row of rows) {
+    seatsSoFar += row.count;
+    pourCumTarget = Math.round(seatsSoFar * pourRatio);
+    contreCumTarget = Math.round(seatsSoFar * contreRatio);
+    abstentionCumTarget = Math.round(seatsSoFar * abstentionRatio);
+
+    const pourInRow = Math.min(row.count, Math.max(0, pourCumTarget - pourAssigned));
+    const contreInRow = Math.min(row.count - pourInRow, Math.max(0, contreCumTarget - contreAssigned));
+    const abstentionInRow = Math.min(
+      row.count - pourInRow - contreInRow,
+      Math.max(0, abstentionCumTarget - abstentionAssigned)
+    );
+    const nonVotantInRow = row.count - pourInRow - contreInRow - abstentionInRow;
+
+    pourAssigned += pourInRow;
+    contreAssigned += contreInRow;
+    abstentionAssigned += abstentionInRow;
+
+    for (let i = 0; i < pourInRow; i++) categories.push('pour');
+    for (let i = 0; i < abstentionInRow; i++) categories.push('abstention');
+    for (let i = 0; i < nonVotantInRow; i++) categories.push('non-votant');
+    for (let i = 0; i < contreInRow; i++) categories.push('contre');
+  }
+
+  return categories;
 }
 
 export function generateHemicycleLayout(total: number, counts: VoteCounts): HemicycleLayout {
@@ -70,6 +118,7 @@ export function generateHemicycleLayout(total: number, counts: VoteCounts): Hemi
   const centerX = width / 2;
   const centerY = height;
 
+  const categories = categorizeSeats(total, counts);
   const points: HemicyclePoint[] = [];
   let index = 0;
 
@@ -78,7 +127,7 @@ export function generateHemicycleLayout(total: number, counts: VoteCounts): Hemi
       const angle = row.count === 1 ? Math.PI / 2 : (i / (row.count - 1)) * Math.PI;
       const x = centerX - row.radius * Math.cos(angle);
       const y = centerY - row.radius * Math.sin(angle);
-      points.push({ x, y, category: categoryForIndex(index, counts) });
+      points.push({ x, y, category: categories[index] });
       index++;
     }
   }
