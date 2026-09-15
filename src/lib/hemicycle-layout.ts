@@ -16,6 +16,7 @@ export interface HemicycleLayout {
   points: HemicyclePoint[];
   width: number;
   height: number;
+  dotSize: number;
 }
 
 export interface VoteCounts {
@@ -109,12 +110,12 @@ export function categorizeSeats(total: number, counts: VoteCounts): VoteCategory
   return categories;
 }
 
-export function generateHemicycleLayout(total: number, counts: VoteCounts): HemicycleLayout {
+export function generateHemicycleLayout(total: number, counts: VoteCounts, dotSize: number = DOT_SIZE): HemicycleLayout {
   const rows = generateRows(total);
   const outerRadius = rows[rows.length - 1]?.radius ?? INNER_RADIUS;
 
-  const width = 2 * (outerRadius + DOT_SIZE / 2);
-  const height = outerRadius + DOT_SIZE / 2;
+  const width = 2 * (outerRadius + dotSize / 2);
+  const height = outerRadius + dotSize / 2;
   const centerX = width / 2;
   const centerY = height;
 
@@ -132,5 +133,5 @@ export function generateHemicycleLayout(total: number, counts: VoteCounts): Hemi
     }
   }
 
-  return { points, width, height };
+  return { points, width, height, dotSize };
 }

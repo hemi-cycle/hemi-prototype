@@ -43,20 +43,20 @@ export function categorizeSeatsByWedge(total: number, counts: VoteCounts): VoteC
   return categories;
 }
 
-export function generateHemicycleLayoutV2(total: number, counts: VoteCounts): HemicycleLayout {
+export function generateHemicycleLayoutV2(total: number, counts: VoteCounts, dotSize: number = DOT_SIZE): HemicycleLayout {
   const rows = generateRows(total);
   const outerRadius = rows[rows.length - 1]?.radius ?? 40;
 
-  const width = 2 * (outerRadius + DOT_SIZE / 2);
+  const width = 2 * (outerRadius + dotSize / 2);
   // centerY (où sin(angle)=0, aux extrémités gauche/droite de chaque rangée) doit
-  // rester à outerRadius + DOT_SIZE/2 du haut du viewBox. La hauteur du SVG doit en
+  // rester à outerRadius + dotSize/2 du haut du viewBox. La hauteur du SVG doit en
   // plus loger la moitié inférieure de ces points, +1 de marge : le point ".dot" en
   // "non-votant" a un stroke-width:1 dessiné à cheval sur le bord du rect, donc 0.5px
-  // dépasse déjà du rayon DOT_SIZE/2 nominal. Sans cette marge, ce stroke se faisait
+  // dépasse déjà du rayon dotSize/2 nominal. Sans cette marge, ce stroke se faisait
   // rogner pile sur le bord inférieur du viewBox (visible comme un léger "cut" de la
   // dernière rangée).
-  const centerY = outerRadius + DOT_SIZE / 2;
-  const height = centerY + DOT_SIZE / 2 + 1;
+  const centerY = outerRadius + dotSize / 2;
+  const height = centerY + dotSize / 2 + 1;
   const centerX = width / 2;
 
   const categories = categorizeSeatsByWedge(total, counts);
@@ -73,5 +73,5 @@ export function generateHemicycleLayoutV2(total: number, counts: VoteCounts): He
     }
   }
 
-  return { points, width, height };
+  return { points, width, height, dotSize };
 }

@@ -15,19 +15,23 @@ import Divider from '../../components/Divider.astro';
 import LawStateTag from '../../components/LawStateTag.astro';
 import Avatar from '../../components/Avatar.astro';
 import ArgumentsList from '../../components/ArgumentsList.astro';
-import KeyNumber from '../../components/KeyNumber.astro';
 import WikiLink from '../../components/WikiLink.astro';
 import Timeline from '../../components/Timeline.astro';
 import VotesTimeline from '../../components/VotesTimeline.astro';
 import HemicycleChartV2 from '../../components/HemicycleChartV2.astro';
 import VotesMajorityBar from '../../components/VotesMajorityBar.astro';
-import loi from '../../data/loi-duplomb-menonville.json';
-import { votesMock } from '../../data/votes-mock';
-import loiDuplombThumbnail from '../../assets/lois/loi-duplomb-menonville.png';
+import { lois, type LoiEntry } from '../../lib/lois';
 
 export function getStaticPaths() {
-  return [{ params: { id: loi.id } }];
+  return lois.map((entry) => ({ params: { id: entry.data.id }, props: { entry } }));
 }
+
+interface Props {
+  entry: LoiEntry;
+}
+
+const { entry } = Astro.props;
+const { data: loi, thumbnail, votes } = entry;
 
 const base = import.meta.env.BASE_URL;
 
@@ -40,14 +44,21 @@ function seuilMajorite(totalSieges: number) {
   return Math.floor(totalSieges / 2) + 1;
 }
 
+function voteResultLabel(pour: number, totalSieges: number) {
+  return pour >= seuilMajorite(totalSieges) ? { prefix: 'Le vote ', verb: 'passe' } : { prefix: 'Le vote est ', verb: 'rejeté' };
+}
+
 // Vote actif par défaut à l'affichage : le dernier de la liste (ici la seule donnée
-// réellement sourcée — voir "MD plans/Hemi_Plan_Votes_Hemicycle.md" §1).
-const activeVote = votesMock[votesMock.length - 1];
+// réellement sourcée — voir "MD plans/Hemi_Plan_Votes_Hemicycle.md" §1). null si la
+// loi n'a encore fait l'objet d'aucun vote (ex. proposition encore en commission) :
+// toute la section "Votes & Hémicycle" est alors omise plus bas.
+const activeVote = votes.length > 0 ? votes[votes.length - 1] : null;
+const activeVoteResult = activeVote ? voteResultLabel(activeVote.pour, activeVote.totalSieges) : null;
 ---
 
 <MobileLayout title={loi.titre_usuel}>
   <header class="hero">
-    <img src={loiDuplombThumbnail.src} alt="" class="hero__image" />
+    <img src={thumbnail.src} alt="" class="hero__image" />
     <div class="hero__scrim"></div>
     <a href={base} class="hero__back">
       <Icon name="arrow-left" size={20} />
@@ -104,39 +115,36 @@ const activeVote = votesMock[votesMock.length - 1];
 
     <ArgumentsList pour={loi.arguments_pour} contre={loi.arguments_contre} />
 
-    <section class="votes-card">
-      <VotesTimeline etapes={loi.etapes} votes={votesMock} activeVoteId={activeVote.id} />
+    {activeVote && activeVoteResult && (
+      <section class="votes-card">
+        <VotesTimeline etapes={loi.etapes} votes={votes} activeVoteId={activeVote.id} />
 
-      <div class="votes-result">
-        <HemicycleChartV2 votes={votesMock} activeVoteId={activeVote.id} />
-
-        <VotesMajorityBar votes={votesMock} activeVoteId={activeVote.id} />
-
-        <div class="votes-footer">
-          <div class="votes-footer__title">
-            <p id="vote-chambre-title">{chambreLabels[activeVote.chambre]}</p>
-            <p id="vote-majority" class="votes-footer__majority">Majorité à {seuilMajorite(activeVote.totalSieges)}</p>
+        <div class="votes-result">
+          <div class="votes-header__title">
+            <h3 id="vote-chambre-title">{chambreLabels[activeVote.chambre]}</h3>
+            <p id="vote-result" class="votes-header__result"><span id="vote-result-prefix">{activeVoteResult.prefix}</span><strong id="vote-result-verb">{activeVoteResult.verb}</strong></p>
           </div>
-          <div class="votes-footer__numbers">
-            <KeyNumber theme="on-dark" valueId="vote-pour" value={activeVote.pour} label="Pour" state="success" dotShape="circle" />
-            <KeyNumber theme="on-dark" valueId="vote-contre" value={activeVote.contre} label="Contre" state="failure" dotShape="square" />
-            <KeyNumber theme="on-dark" valueId="vote-abstention" value={activeVote.abstention} label="Abstentions" state="warning" dotShape="triangle" />
-            <KeyNumber theme="on-dark" valueId="vote-non-votant" value={activeVote.nonVotant} label="Non-votants" dotShape="circle" />
+
+          <HemicycleChartV2 votes={votes} activeVoteId={activeVote.id} />
+
+          <VotesMajorityBar votes={votes} activeVoteId={activeVote.id} />
+
+          <div class="votes-footer">
+            <a
+              href={activeVote.source || undefined}
+              target={activeVote.source ? '_blank' : undefined}
+              rel={activeVote.source ? 'noopener noreferrer' : undefined}
+              class="votes-footer__button"
+              id="vote-source"
+            >
+              {activeVote.source ? 'Voir + en détails' : 'Donnée provisoire — à confirmer'}
+            </a>
           </div>
-          <a
-            href={activeVote.source || undefined}
-            target={activeVote.source ? '_blank' : undefined}
-            rel={activeVote.source ? 'noopener noreferrer' : undefined}
-            class="votes-footer__button"
-            id="vote-source"
-          >
-            {activeVote.source ? 'Voir + en détails' : 'Donnée provisoire — à confirmer'}
-          </a>
         </div>
-      </div>
 
-      <WikiLink question="Combien faut-il de votes pour qu'une loi passe ?" href={`${base}/antiseche`} />
-    </section>
+        <WikiLink question="Combien faut-il de votes pour qu'une loi passe ?" href={`${base}/antiseche`} />
+      </section>
+    )}
 
     <section class="timeline-section">
       <h2 class="timeline-section__title">On rembobine !</h2>
@@ -182,22 +190,26 @@ const activeVote = votesMock[votesMock.length - 1];
     return Math.floor(totalSieges / 2) + 1;
   }
 
+  function voteResultLabel(pour: number, totalSieges: number) {
+    return pour >= seuilMajorite(totalSieges) ? { prefix: 'Le vote ', verb: 'passe' } : { prefix: 'Le vote est ', verb: 'rejeté' };
+  }
+
   const timelineItems = document.querySelectorAll<HTMLButtonElement>('.vote-timeline-toggle');
   const chambreTitle = document.getElementById('vote-chambre-title');
-  const voteMajority = document.getElementById('vote-majority');
+  const voteResultPrefix = document.getElementById('vote-result-prefix');
+  const voteResultVerb = document.getElementById('vote-result-verb');
   const svgsV2 = document.querySelectorAll<SVGSVGElement>('.hemicycle-v2__svg');
   const seatsLabelV2 = document.getElementById('hemicycle-v2-seats');
-  const votePour = document.getElementById('vote-pour');
-  const voteContre = document.getElementById('vote-contre');
-  const voteAbstention = document.getElementById('vote-abstention');
-  const voteNonVotant = document.getElementById('vote-non-votant');
   const voteSource = document.getElementById('vote-source') as HTMLAnchorElement | null;
   const majorityBarPour = document.getElementById('majority-bar-pour');
+  const majorityBarAbstention = document.getElementById('majority-bar-abstention');
+  const majorityBarNonVotant = document.getElementById('majority-bar-non-votant');
   const majorityBarContre = document.getElementById('majority-bar-contre');
   const majorityBarMarker = document.getElementById('majority-bar-marker');
   const majorityBarPourValue = document.getElementById('majority-bar-pour-value');
   const majorityBarContreValue = document.getElementById('majority-bar-contre-value');
-  const majorityBarNeutreValue = document.getElementById('majority-bar-neutre-value');
+  const majorityBarAbstentionValue = document.getElementById('majority-bar-abstention-value');
+  const majorityBarNonVotantValue = document.getElementById('majority-bar-non-votant-value');
 
   timelineItems.forEach((item) => {
     item.addEventListener('click', () => {
@@ -223,7 +235,7 @@ const activeVote = votesMock[votesMock.length - 1];
             'aria-label',
             `Hémicycle : ${counts.pour} pour, ${counts.contre} contre, ${counts.abstention} abstentions, ${counts.nonVotant} non-votants sur ${total} sièges.`
           );
-          svg.querySelectorAll<SVGRectElement>('.hemicycle-v2__dot').forEach((dot, index) => {
+          svg.querySelectorAll<SVGCircleElement>('.hemicycle-v2__dot').forEach((dot, index) => {
             const category = categoriesV2[index];
             dot.setAttribute('data-vote', category);
             const title = dot.querySelector('title');
@@ -235,20 +247,36 @@ const activeVote = votesMock[votesMock.length - 1];
       if (seatsLabelV2) seatsLabelV2.textContent = String(total);
 
       if (chambreTitle) chambreTitle.textContent = chambreLabels[chambre] ?? chambre;
-      if (voteMajority) voteMajority.textContent = `Majorité à ${seuilMajorite(total)}`;
-
-      if (votePour) votePour.textContent = String(counts.pour);
-      if (voteContre) voteContre.textContent = String(counts.contre);
-      if (voteAbstention) voteAbstention.textContent = String(counts.abstention);
-      if (voteNonVotant) voteNonVotant.textContent = String(counts.nonVotant);
+      const result = voteResultLabel(counts.pour, total);
+      if (voteResultPrefix) voteResultPrefix.textContent = result.prefix;
+      if (voteResultVerb) voteResultVerb.textContent = result.verb;
 
       const majorite = seuilMajorite(total);
-      if (majorityBarPour) majorityBarPour.style.width = `${(counts.pour / total) * 100}%`;
-      if (majorityBarContre) majorityBarContre.style.width = `${(counts.contre / total) * 100}%`;
+      const pourPct = (counts.pour / total) * 100;
+      const abstentionPct = (counts.abstention / total) * 100;
+      const nonVotantPct = (counts.nonVotant / total) * 100;
+      const contrePct = (counts.contre / total) * 100;
+      if (majorityBarPour) {
+        majorityBarPour.style.left = '0%';
+        majorityBarPour.style.width = `${pourPct}%`;
+      }
+      if (majorityBarAbstention) {
+        majorityBarAbstention.style.left = `${pourPct}%`;
+        majorityBarAbstention.style.width = `${abstentionPct}%`;
+      }
+      if (majorityBarNonVotant) {
+        majorityBarNonVotant.style.left = `${pourPct + abstentionPct}%`;
+        majorityBarNonVotant.style.width = `${nonVotantPct}%`;
+      }
+      if (majorityBarContre) {
+        majorityBarContre.style.left = `${pourPct + abstentionPct + nonVotantPct}%`;
+        majorityBarContre.style.width = `${contrePct}%`;
+      }
       if (majorityBarMarker) majorityBarMarker.style.left = `${(majorite / total) * 100}%`;
       if (majorityBarPourValue) majorityBarPourValue.textContent = String(counts.pour);
       if (majorityBarContreValue) majorityBarContreValue.textContent = String(counts.contre);
-      if (majorityBarNeutreValue) majorityBarNeutreValue.textContent = String(counts.abstention + counts.nonVotant);
+      if (majorityBarAbstentionValue) majorityBarAbstentionValue.textContent = String(counts.abstention);
+      if (majorityBarNonVotantValue) majorityBarNonVotantValue.textContent = String(counts.nonVotant);
 
       if (voteSource) {
         if (source) {
@@ -522,27 +550,21 @@ const activeVote = votesMock[votesMock.length - 1];
     width: 100%;
   }
 
-  .votes-footer__title {
+  .votes-header__title {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     width: 100%;
     min-width: 0;
-    padding: var(--space-4xs) 0;
-    background: var(--color-overlay-light-20);
-    border: 0.5px solid var(--color-brand-darker);
-    border-radius: var(--radius-extra-small);
   }
 
-  .votes-footer__title p {
-    /* min-width:0 est nécessaire : un enfant flex refuse par défaut de rétrécir
-       sous sa largeur de contenu (min-width:auto), donc "Assemblée nationale" en
-       nowrap débordait de la pilule au lieu de s'y tronquer. */
+  .votes-header__title h3,
+  .votes-header__title p {
     min-width: 0;
     overflow: hidden;
     font-family: var(--font-heading);
-    font-size: var(--text-body-small);
+    font-size: var(--text-h3);
     font-weight: 400;
     color: var(--color-text-white);
     margin: 0;
@@ -550,18 +572,10 @@ const activeVote = votesMock[votesMock.length - 1];
     text-overflow: ellipsis;
   }
 
-  .votes-footer__title p.votes-footer__majority {
+  .votes-header__title p.votes-header__result {
     font-family: var(--font-body);
-    font-size: var(--text-body-xsmall);
+    font-size: var(--text-body-large);
     font-weight: 400;
-    opacity: 0.7;
-  }
-
-  .votes-footer__numbers {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1px;
-    width: 100%;
   }
 
   .votes-footer__button {

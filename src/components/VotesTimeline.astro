@@ -96,6 +96,10 @@ const items = etapes
     overflow-x: auto;
     overflow-y: hidden;
     scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+
+  .votes-timeline:hover {
     scrollbar-color: var(--color-border-neutral-secondary) transparent;
   }
 
@@ -110,8 +114,13 @@ const items = etapes
   }
 
   .votes-timeline::-webkit-scrollbar-thumb {
-    background: var(--color-border-neutral-secondary);
+    background: transparent;
     border-radius: var(--radius-full);
+    transition: background 0.15s ease;
+  }
+
+  .votes-timeline:hover::-webkit-scrollbar-thumb {
+    background: var(--color-border-neutral-secondary);
   }
 
   .votes-timeline::-webkit-scrollbar-button,

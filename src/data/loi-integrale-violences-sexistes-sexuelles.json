@@ -1,0 +1,119 @@
+{
+  "id": "loi-integrale-violences-sexistes-sexuelles",
+  "titre_usuel": "Loi intégrale contre les violences sexistes et sexuelles",
+  "titre_officiel": "Proposition de loi visant à lutter de manière intégrale contre les violences sexistes et sexuelles commises à l'encontre des femmes et des enfants",
+  "numero_proposition": "Proposition de loi n° 2169",
+  "numero_loi": null,
+  "reference_jo": null,
+  "sous_titre": "La députée Céline Thiébault-Martinez propose une loi complète contre les violences sexistes et sexuelles envers les femmes et les enfants.",
+  "resume": "La députée Céline Thiébault-Martinez dépose ce texte pour mieux protéger les femmes et les enfants contre les violences sexuelles et sexistes. Le meurtre de Lyhanna, une fillette de 11 ans violée et tuée en juin 2026, relance l'urgence d'agir. La loi crée des juridictions spécialisées, forme les magistrats, et encadre plus strictement les expertises judiciaires. Elle est actuellement examinée par une commission spéciale à l'Assemblée nationale, avant un débat prévu dans l'hémicycle fin septembre 2026.",
+  "description": "Céline Thiébault-Martinez (Socialistes) dépose ce texte à l'Assemblée nationale le 2 décembre 2025. Une coalition de plus de 150 associations féministes et de défense de l'enfance a construit ce texte à partir de 140 propositions de terrain. Plus de 237 parlementaires de 8 groupes politiques le soutiennent, à l'exception du Rassemblement national, de l'UDR, et de La France insoumise qui n'avait pas signé la première version.\n\nEn juin 2026, le meurtre de Lyhanna, une fillette de 11 ans violée et tuée dans le Gard, relance le débat : quelqu'un avait déjà signalé le suspect principal à la justice, sans suite donnée. La présidente de l'Assemblée nationale demande alors un avis au Conseil d'État. Les député·es retravaillent le texte cet été et le redéposent le 11 août 2026, avec 69 articles.\n\nLe texte couvre toute la chaîne des violences : repérer les victimes, les accompagner, créer des juridictions spécialisées, former les magistrats, et encadrer les expertises judiciaires. Il élargit aussi l'aide juridictionnelle aux victimes d'agression sexuelle, sans condition de ressources.\n\nLe coût est estimé à environ 3 milliards d'euros par an entre 2027 et 2032. La ministre Aurore Bergé assure que le budget ne bloquera pas l'adoption de la loi, mais les associations restent mobilisées pour s'assurer que le financement suive vraiment.",
+  "depose_par": [
+    {
+      "nom": "Céline Thiébault-Martinez",
+      "fonction": "Députée",
+      "parti": "Socialistes",
+      "role": "Autrice principale et rapporteure générale de la commission spéciale",
+      "circonscription": "Seine-et-Marne",
+      "source": "https://www.assemblee-nationale.fr/dyn/17/textes/l17b2169_proposition-loi.pdf"
+    }
+  ],
+  "soutien_parlementaire": {
+    "description": "Plus de 237 parlementaires issus de 8 groupes politiques soutiennent le texte. Le Rassemblement national et l'UDR n'ont pas été associés à sa rédaction ; La France insoumise n'avait pas signé la première version.",
+    "source": "https://lcp.fr/index%2ephp/actualites/loi-integrale-contre-les-violences-sexistes-et-sexuelles-les-travaux-vont-debuter-le-7"
+  },
+  "statut_actuel": "en_cours",
+  "etapes": [
+    {
+      "date": "2025-12-02",
+      "chambre": "assemblee_nationale",
+      "type": "depot",
+      "libelle": "La députée Céline Thiébault-Martinez dépose son texte à l'Assemblée nationale",
+      "statut": "fait",
+      "source": "https://www.assemblee-nationale.fr/dyn/17/textes/l17b2169_proposition-loi.pdf"
+    },
+    {
+      "date": "2026-06-08",
+      "chambre": "conseil_etat",
+      "type": "saisine_avis",
+      "libelle": "La présidente de l'Assemblée nationale demande l'avis du Conseil d'État",
+      "statut": "fait",
+      "source": "https://conseil-etat.fr/avis-consultatifs/derniers-avis-rendus/a-l-assemblee-nationale-et-au-senat/avis-sur-une-proposition-de-loi-visant-a-lutter-de-maniere-integrale-contre-les-violences-sexistes-et-sexuelles-commises-a-l-encontre-des-femmes-et"
+    },
+    {
+      "date": "2026-08-11",
+      "chambre": "assemblee_nationale",
+      "type": "redepot",
+      "libelle": "Les député·es redéposent une version retravaillée du texte",
+      "statut": "fait",
+      "source": "https://lcp.fr/index%2ephp/actualites/loi-integrale-contre-les-violences-sexistes-et-sexuelles-les-travaux-vont-debuter-le-7"
+    },
+    {
+      "date": "2026-09-07",
+      "chambre": "assemblee_nationale",
+      "type": "commission",
+      "libelle": "Une commission spéciale commence à examiner le texte",
+      "statut": "fait",
+      "source": "https://www.assemblee-nationale.fr/dyn/actualites-accueil-hub/commission-speciale-chargee-d-examiner-la-proposition-de-loi-integrale-face-aux-violences-sexuelles-et-sexistes-contre-les-femmes-et-les-enfants"
+    },
+    {
+      "date": "2026-09-16",
+      "chambre": "assemblee_nationale",
+      "type": "auditions",
+      "libelle": "La commission auditionne six ministres du gouvernement",
+      "statut": "a_venir",
+      "source": "https://www.assemblee-nationale.fr/"
+    },
+    {
+      "date": "2026-09-28",
+      "chambre": "assemblee_nationale",
+      "type": "seance_publique",
+      "libelle": "Les député·es débattent du texte dans l'hémicycle",
+      "statut": "a_venir",
+      "source": "https://lcp.fr/index%2ephp/actualites/loi-integrale-contre-les-violences-sexistes-et-sexuelles-les-travaux-vont-debuter-le-7"
+    }
+  ],
+  "votes": [],
+  "arguments_pour": [
+    {
+      "titre": "⚖️ Répond à un vrai problème",
+      "description": "94 % des plaintes pour viol sont classées sans suite"
+    },
+    {
+      "titre": "🔗 Une approche globale",
+      "description": "Couvre toute la chaîne des violences, de la prévention au jugement des auteurs, plutôt que des mesures isolées"
+    },
+    {
+      "titre": "🤝 Un soutien transpartisan large",
+      "description": "Rassemble un soutien transpartisan exceptionnel : plus de 237 parlementaires de 8 groupes politiques"
+    }
+  ],
+  "arguments_contre": [
+    {
+      "titre": "💰 Un financement incertain",
+      "description": "La loi est estimée à environ 3 milliards d'euros par an, et les associations craignent un écart entre les annonces et les moyens réellement débloqués"
+    },
+    {
+      "titre": "🚫 Un consensus incomplet",
+      "description": "Le Rassemblement national et l'UDR n'ont pas été associés à la rédaction du texte, et La France insoumise n'avait pas signé sa première version"
+    }
+  ],
+  "sources": [
+    {
+      "label": "Texte intégral de la proposition de loi n° 2169",
+      "url": "https://www.assemblee-nationale.fr/dyn/17/textes/l17b2169_proposition-loi.pdf"
+    },
+    {
+      "label": "Avis du Conseil d'État",
+      "url": "https://conseil-etat.fr/avis-consultatifs/derniers-avis-rendus/a-l-assemblee-nationale-et-au-senat/avis-sur-une-proposition-de-loi-visant-a-lutter-de-maniere-integrale-contre-les-violences-sexistes-et-sexuelles-commises-a-l-encontre-des-femmes-et"
+    },
+    {
+      "label": "Dossier législatif — LCP Assemblée nationale",
+      "url": "https://lcp.fr/dossiers/loi-integrale-contre-les-violences-sexuelles-et-sexistes-441435"
+    },
+    {
+      "label": "Ce que contient le texte — France Info",
+      "url": "https://www.franceinfo.fr/societe/harcelement-sexuel/detection-des-victimes-juridictions-specialisees-reconnaissance-de-l-inceste-ce-que-contient-la-proposition-de-loi-integrale-pour-lutter-contre-les-violences-sexistes-et-sexuelles-qui-arrive-a-l-assemblee_8180609.html"
+    }
+  ]
+}

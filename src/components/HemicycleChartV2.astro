@@ -26,11 +26,20 @@ for (const vote of votes) {
   byChambre.set(vote.chambre, [...(byChambre.get(vote.chambre) ?? []), vote]);
 }
 
+// L'AN (577 sièges, rayon extérieur ~208) et le Sénat (348, ~160) partagent le même
+// viewBox "max" (voir chartMaxWidth/Height plus bas) : l'hémicycle le plus petit
+// (Sénat) est donc mécaniquement agrandi par preserveAspectRatio pour remplir le
+// même conteneur, ce qui grossit AUSSI ses points au passage. À DOT_SIZE égal, les
+// points de l'AN paraissent donc plus petits à l'écran que ceux du Sénat — on
+// compense en augmentant le DOT_SIZE de l'AN.
+const AN_DOT_SIZE = Math.round(DOT_SIZE * 1.3 * 10) / 10;
+
 const chambreCharts = Array.from(byChambre.entries()).map(([chambre, steps]) => {
   const totalSieges = steps[steps.length - 1].totalSieges;
   const isActive = chambre === activeVote.chambre;
   const initialCounts = isActive ? activeVote : steps[steps.length - 1];
-  const layout = generateHemicycleLayoutV2(totalSieges, initialCounts);
+  const dotSize = chambre === 'assemblee_nationale' ? AN_DOT_SIZE : DOT_SIZE;
+  const layout = generateHemicycleLayoutV2(totalSieges, initialCounts, dotSize);
   return { chambre, layout, isActive };
 });
 
@@ -46,6 +55,34 @@ const chartMaxHeight = Math.max(...chambreCharts.map((chart) => chart.layout.hei
 ---
 
 <div class="hemicycle-v2">
+  <svg width="0" height="0" aria-hidden="true" focusable="false" class="hemicycle-v2__defs">
+    <defs>
+      <!-- Même hachure/couleurs que VotesMajorityBar (identité Pour/Contre par
+           orientation 45°/135°, pas seulement par couleur, pour les daltoniens) —
+           un seul <defs> partagé par les deux <svg> par chambre ci-dessous.
+           ATTENTION : CSS repeating-linear-gradient(Ndeg) et SVG patternTransform
+           "rotate(N)" sur une hachure verticale ne donnent PAS la même orientation
+           visuelle pour le même N (une bande de gradient est perpendiculaire à son
+           axe, un rect vertical tourné suit directement l'angle) — d'où le rotate()
+           inversé (135/45) ici par rapport aux 45deg/135deg CSS de VotesMajorityBar,
+           pour obtenir le même "\" (pour) / "/" (contre) à l'écran dans les deux. -->
+      <pattern id="hemicycle-stripe-pour" patternUnits="userSpaceOnUse" width="3" height="3" patternTransform="rotate(135)">
+        <rect class="hemicycle-v2__stripe-bg hemicycle-v2__stripe-bg--pour" width="3" height="3" />
+        <rect class="hemicycle-v2__stripe-ink" width="1.5" height="3" />
+      </pattern>
+      <pattern id="hemicycle-stripe-contre" patternUnits="userSpaceOnUse" width="3" height="3" patternTransform="rotate(45)">
+        <rect class="hemicycle-v2__stripe-bg hemicycle-v2__stripe-bg--contre" width="3" height="3" />
+        <rect class="hemicycle-v2__stripe-ink hemicycle-v2__stripe-ink--contre" width="1.5" height="3" />
+      </pattern>
+      <!-- Abstention (horizontal) — même rect vertical de base que pour/contre,
+           tourné de 90°. Non-votant reste blanc plein + bordure, sans hachure. -->
+      <pattern id="hemicycle-stripe-abstention" patternUnits="userSpaceOnUse" width="3" height="3" patternTransform="rotate(90)">
+        <rect class="hemicycle-v2__stripe-bg hemicycle-v2__stripe-bg--abstention" width="3" height="3" />
+        <rect class="hemicycle-v2__stripe-ink" width="1.5" height="3" />
+      </pattern>
+    </defs>
+  </svg>
+
   <div class="hemicycle-v2__stack">
     <div class="hemicycle-v2__chart" style={`aspect-ratio: ${chartMaxWidth} / ${chartMaxHeight};`}>
     {chambreCharts.map((chart) => (
@@ -60,17 +97,16 @@ const chartMaxHeight = Math.max(...chambreCharts.map((chart) => chart.layout.hei
         aria-label={`Hémicycle : ${activeVote.pour} pour, ${activeVote.contre} contre, ${activeVote.abstention} abstentions, ${activeVote.nonVotant} non-votants sur ${activeVote.totalSieges} sièges.`}
       >
         {chart.layout.points.map((point, index) => (
-          <rect
+          <circle
             class="hemicycle-v2__dot"
             data-index={index}
             data-vote={point.category}
-            x={point.x - DOT_SIZE / 2}
-            y={point.y - DOT_SIZE / 2}
-            width={DOT_SIZE}
-            height={DOT_SIZE}
+            cx={point.x}
+            cy={point.y}
+            r={chart.layout.dotSize / 2}
           >
             <title>Siège {index + 1} — {point.category}</title>
-          </rect>
+          </circle>
         ))}
       </svg>
     ))}
@@ -113,7 +149,7 @@ const chartMaxHeight = Math.max(...chambreCharts.map((chart) => chart.layout.hei
        à width:100% au lieu d'être soustrait du contenu — la carte devient plus large
        que son parent .hemicycle-v2__stack, d'où le padding "sans effet" et le
        dataviz qui débordait de la carte. */
-    padding: var(--space-sm);
+    padding: var(--space-2xs);
     padding-bottom: 0;
   }
 
@@ -134,25 +170,41 @@ const chartMaxHeight = Math.max(...chambreCharts.map((chart) => chart.layout.hei
   }
 
   .hemicycle-v2__dot[data-vote='pour'] {
-    fill: var(--color-success-on-light);
-    clip-path: circle(50% at 50% 50%);
+    fill: url(#hemicycle-stripe-pour);
   }
 
   .hemicycle-v2__dot[data-vote='contre'] {
+    fill: url(#hemicycle-stripe-contre);
+  }
+
+  .hemicycle-v2__stripe-bg--pour {
+    fill: var(--color-success-on-light);
+  }
+
+  .hemicycle-v2__stripe-bg--contre {
     fill: var(--color-error-on-light);
-    clip-path: none;
+  }
+
+  .hemicycle-v2__stripe-ink {
+    fill: rgba(0, 0, 0, 0.2);
+  }
+
+  .hemicycle-v2__stripe-ink--contre {
+    fill: rgba(255, 255, 255, 0.3);
+  }
+
+  .hemicycle-v2__stripe-bg--abstention {
+    fill: var(--color-warning-on-light);
   }
 
   .hemicycle-v2__dot[data-vote='abstention'] {
-    fill: var(--color-warning-on-light);
-    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    fill: url(#hemicycle-stripe-abstention);
   }
 
   .hemicycle-v2__dot[data-vote='non-votant'] {
     fill: white;
     stroke: var(--color-border-neutral-secondary);
     stroke-width: 1;
-    clip-path: circle(50% at 50% 50%);
   }
 
   .hemicycle-v2__center-label {

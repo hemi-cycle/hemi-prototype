@@ -1,11 +1,14 @@
 ---
-// Barre de proportion Pour/Contre — complément à HemicycleChartV2 (1 point = 1 siège),
-// pensé pour une lecture plus rapide du rapport de force : Pour ancré à gauche, Contre
-// ancré à droite (l'espace restant au milieu = abstentions + non-votants), avec un
-// repère vertical rouge sur le seuil de majorité (même calcul que `seuilMajorite` dans
-// loi/[id].astro, dupliqué ici comme le reste du module Votes & Hémicycle — voir le
-// commentaire de HemicycleChartV2 sur l'absence de recalcul de layout au clic).
+// Barre de proportion Pour/Abstention/Non-votant/Contre — complément à HemicycleChartV2
+// (1 point = 1 siège), même ordre gauche→droite que hemicycle-layout.ts ("pour |
+// abstention | non-votant | contre", voir son commentaire) donc les deux dataviz
+// racontent la même histoire spatiale. Barre 100% empilée (les 4 largeurs somment à
+// la largeur du track), avec un repère vertical sur le seuil de majorité (même calcul
+// que `seuilMajorite` dans loi/[id].astro, dupliqué ici comme le reste du module Votes
+// & Hémicycle — voir le commentaire de HemicycleChartV2 sur l'absence de recalcul de
+// layout au clic).
 import type { VoteStep } from '../data/votes-mock';
+import KeyNumber from './KeyNumber.astro';
 
 interface Props {
   votes: VoteStep[];
@@ -21,40 +24,50 @@ function seuilMajorite(totalSieges: number) {
 }
 
 const pourPct = (activeVote.pour / activeVote.totalSieges) * 100;
+const abstentionPct = (activeVote.abstention / activeVote.totalSieges) * 100;
+const nonVotantPct = (activeVote.nonVotant / activeVote.totalSieges) * 100;
 const contrePct = (activeVote.contre / activeVote.totalSieges) * 100;
 const majorityPct = (seuilMajorite(activeVote.totalSieges) / activeVote.totalSieges) * 100;
-const neutre = activeVote.abstention + activeVote.nonVotant;
 ---
 
-<div class="majority-bar">
-  <p class="majority-bar__title">Majorité absolue</p>
+<div class="majority-bar-group">
+  <div class="majority-bar">
+    <p class="majority-bar__title">Majorité absolue</p>
 
-  <div class="majority-bar__track-wrapper">
-    <div class="majority-bar__track">
-      <div class="majority-bar__segment majority-bar__segment--pour" id="majority-bar-pour" style={`width:${pourPct}%`}></div>
-      <div class="majority-bar__segment majority-bar__segment--contre" id="majority-bar-contre" style={`width:${contrePct}%`}></div>
-    </div>
-    <div class="majority-bar__marker" id="majority-bar-marker" style={`left:${majorityPct}%`}></div>
-  </div>
-
-  <div class="majority-bar__labels">
-    <div class="majority-bar__label majority-bar__label--pour">
-      <span class="majority-bar__dot"></span>
-      Pour <strong id="majority-bar-pour-value">{activeVote.pour}</strong>
-    </div>
-    <div class="majority-bar__label majority-bar__label--contre">
-      Contre <strong id="majority-bar-contre-value">{activeVote.contre}</strong>
-      <span class="majority-bar__dot"></span>
+    <div class="majority-bar__track-wrapper">
+      <div class="majority-bar__track">
+        <div class="majority-bar__segment majority-bar__segment--pour" id="majority-bar-pour" style={`left:0%; width:${pourPct}%`}></div>
+        <div class="majority-bar__segment majority-bar__segment--abstention" id="majority-bar-abstention" style={`left:${pourPct}%; width:${abstentionPct}%`}></div>
+        <div class="majority-bar__segment majority-bar__segment--non-votant" id="majority-bar-non-votant" style={`left:${pourPct + abstentionPct}%; width:${nonVotantPct}%`}></div>
+        <div class="majority-bar__segment majority-bar__segment--contre" id="majority-bar-contre" style={`left:${pourPct + abstentionPct + nonVotantPct}%; width:${contrePct}%`}></div>
+      </div>
+      <div class="majority-bar__marker" id="majority-bar-marker" style={`left:${majorityPct}%`}></div>
     </div>
   </div>
 
-  <div class="majority-bar__label majority-bar__label--neutre">
-    <span class="majority-bar__dot"></span>
-    Abstentions · non-votants <strong id="majority-bar-neutre-value">{neutre}</strong>
+  <div class="majority-bar__numbers">
+    <KeyNumber theme="on-light" valueId="majority-bar-pour-value" value={activeVote.pour} label="Pour" state="success" dot dotStripe="nw" />
+    <KeyNumber theme="on-light" valueId="majority-bar-contre-value" value={activeVote.contre} label="Contre" state="failure" dot dotStripe="ne" />
+    <KeyNumber theme="on-light" valueId="majority-bar-abstention-value" value={activeVote.abstention} label="Abstentions" state="warning" dot dotStripe="horizontal" />
+    <KeyNumber theme="on-light" valueId="majority-bar-non-votant-value" value={activeVote.nonVotant} label="Non-votants" dot dotBordered />
   </div>
 </div>
 
 <style>
+  .majority-bar-group {
+    /* Regroupe .majority-bar et .majority-bar__numbers en un seul bloc visuel : le
+       radius/overflow-hidden vit ICI (pas sur les deux enfants) pour que le clip
+       s'applique au rectangle global, et le gap de 1px laisse apparaître le fond de
+       la carte votes derrière comme fine séparation — même logique que le gap
+       interne de .majority-bar__numbers. */
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    width: 100%;
+    border-radius: var(--radius-small);
+    overflow: hidden;
+  }
+
   .majority-bar {
     /* box-sizing:border-box requis : aucun reset global box-sizing dans le projet
        (comportement par défaut du navigateur), donc width:100% + padding dépassait
@@ -65,10 +78,9 @@ const neutre = activeVote.abstention + activeVote.nonVotant;
     flex-direction: column;
     gap: var(--space-2xs);
     width: 100%;
-    padding: var(--space-sm);
+    padding: var(--space-2xs) var(--space-sm) var(--space-sm);
     background: white;
-    border: 1px solid white;
-    border-radius: var(--radius-small);
+    border-radius: var(--radius-small) var(--radius-small) 4px 4px;
   }
 
   .majority-bar__title {
@@ -98,26 +110,39 @@ const neutre = activeVote.abstention + activeVote.nonVotant;
     position: absolute;
     top: 0;
     height: 100%;
-    transition: width 0.2s ease;
+    transition: left 0.2s ease, width 0.2s ease;
   }
 
   .majority-bar__segment--pour {
-    left: 0;
-    right: auto;
     background-color: var(--color-success-on-light);
     /* Texture — canal accessibilité daltonisme (dataviz skill, "Texture fill") :
        hachures diagonales 45°/135° tone-on-tone (noir en surimpression, pas une
        nouvelle teinte), même "loudness" (opacité) des deux côtés — l'orientation
        seule doit suffire à distinguer Pour de Contre, même en niveaux de gris. */
-    background-image: repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.18) 0, rgba(0, 0, 0, 0.18) 2px, transparent 2px, transparent 8px);
+    background-image: repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.2) 0, rgba(0, 0, 0, 0.2) 3px, transparent 3px, transparent 14px);
     border-radius: var(--radius-small) 0 0 var(--radius-small);
   }
 
+  .majority-bar__segment--abstention {
+    background-color: var(--color-warning-on-light);
+    /* Hachures horizontales — 4e orientation distincte (Pour \, Contre /, ici
+       horizontal, Non-votant vertical) pour identifier chaque catégorie même en
+       niveaux de gris, sans se confondre avec les diagonales Pour/Contre. */
+    background-image: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.2) 0, rgba(0, 0, 0, 0.2) 3px, transparent 3px, transparent 14px);
+  }
+
+  .majority-bar__segment--non-votant {
+    /* Blanc avec bordure INTÉRIEURE (box-shadow inset, pas border — un border
+       classique s'ajouterait à left/width en dehors de box-sizing:border-box ici et
+       décalerait les segments voisins) pour rester visible sur le fond blanc de la
+       carte et sur le track gris clair. */
+    background-color: white;
+    box-shadow: inset 0 0 0 1px var(--color-border-neutral-secondary);
+  }
+
   .majority-bar__segment--contre {
-    right: 0;
-    left: auto;
     background-color: var(--color-error-on-light);
-    background-image: repeating-linear-gradient(135deg, rgba(0, 0, 0, 0.18) 0, rgba(0, 0, 0, 0.18) 2px, transparent 2px, transparent 8px);
+    background-image: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0, rgba(255, 255, 255, 0.3) 3px, transparent 3px, transparent 14px);
     border-radius: 0 var(--radius-small) var(--radius-small) 0;
   }
 
@@ -132,60 +157,16 @@ const neutre = activeVote.abstention + activeVote.nonVotant;
     box-shadow: 0 0 0 2px white;
   }
 
-  .majority-bar__labels {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-2xs);
-    font-family: var(--font-body);
-    font-size: var(--text-body-small);
-    color: var(--color-text-default);
-  }
-
-  .majority-bar__label {
-    display: flex;
-    align-items: center;
-    gap: var(--space-4xs);
-  }
-
-  .majority-bar__label--pour strong {
-    color: var(--color-success-on-light);
-  }
-
-  .majority-bar__label--contre strong {
-    color: var(--color-error-on-light);
-  }
-
-  .majority-bar__label--neutre {
-    justify-content: center;
-    font-size: var(--text-body-xsmall);
-    color: var(--color-text-dark-grey);
-  }
-
-  .majority-bar__label--neutre strong {
-    color: var(--color-text-dark-grey);
-  }
-
-  .majority-bar__dot {
-    width: 8px;
-    height: 8px;
-    border-radius: var(--radius-full);
-    flex-shrink: 0;
-  }
-
-  .majority-bar__label--pour .majority-bar__dot {
-    background-color: var(--color-success-on-light);
-    /* Même hachure que les segments de la barre (identité par orientation, pas
-       seulement par couleur) — période resserrée pour rester lisible sur 8px. */
-    background-image: repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.18) 0, rgba(0, 0, 0, 0.18) 1px, transparent 1px, transparent 3px);
-  }
-
-  .majority-bar__label--contre .majority-bar__dot {
-    background-color: var(--color-error-on-light);
-    background-image: repeating-linear-gradient(135deg, rgba(0, 0, 0, 0.18) 0, rgba(0, 0, 0, 0.18) 1px, transparent 1px, transparent 3px);
-  }
-
-  .majority-bar__label--neutre .majority-bar__dot {
-    background: var(--color-bg-neutral-tertiary);
+  .majority-bar__numbers {
+    /* Même grille que .votes-footer__numbers (loi/[id].astro) — mêmes KeyNumber,
+       juste theme="on-light" au lieu de "on-dark". Fond blanc de chaque cellule via
+       .key-number--on-light, pas du conteneur : le gap de 1px laisse apparaître le
+       fond de la carte votes derrière comme grille de séparation. Radius/overflow-
+       hidden gérés par .majority-bar-group. */
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    width: 100%;
   }
 </style>

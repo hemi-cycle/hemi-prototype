@@ -38,11 +38,11 @@
   /* Couleurs — état */
   --color-success-on-light: #1c9d4e;
   --color-success-light: #c8e4da;
-  --color-success-on-dark: #8aebae;
+  --color-success-on-dark: #0aff64;
   --color-error-on-light: #ed1811;
   --color-error-light: #ffc2c0;
-  --color-error-on-dark: #ffbab8;
-  --color-warning-on-light: #d64f00;
+  --color-error-on-dark: #ff7a75;
+  --color-warning-on-light: #d69800;
   --color-warning-on-dark: #ffa12f;
   --color-warning-dark: #a33c09;
 
