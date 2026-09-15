@@ -10,6 +10,7 @@ interface Etape {
   date: string;
   chambre: string;
   libelle: string;
+  description?: string;
   statut: string;
 }
 
@@ -44,14 +45,17 @@ const variant: Variant = etape.statut === 'fait' ? 'done' : etape.statut === 'en
     {hasLine && <span class="timeline-item__line"></span>}
   </div>
   <div class="timeline-item__content">
-    {variant === 'done' && <Tag label={formatDate(etape.date)} style="brand" type="fill" />}
-    {variant === 'in-progress' && <Tag label="En cours" style="warning" type="fill" leading="dot" />}
-    {variant === 'estimated' && <Tag label={`Estimé le ${formatDate(etape.date)}`} style="neutral" type="tonal" />}
+    <div class="timeline-item__tags">
+      {variant === 'done' && <Tag label={formatDate(etape.date)} style="brand" type="tonal" />}
+      {variant === 'in-progress' && <Tag label="En cours" style="warning" type="fill" leading="dot" />}
+      {variant === 'estimated' && <Tag label={`Estimé le ${formatDate(etape.date)}`} style="neutral" type="tonal" />}
+      {chambreLabels[etape.chambre] && <Tag label={chambreLabels[etape.chambre]} style="neutral" type="tonal" />}
+    </div>
 
     <div class="timeline-item__body">
       <div class="timeline-item__text">
         <p class="timeline-item__title">{etape.libelle}</p>
-        {chambreLabels[etape.chambre] && <p class="timeline-item__chambre">{chambreLabels[etape.chambre]}</p>}
+        {etape.description && <p class="timeline-item__description">{etape.description}</p>}
       </div>
     </div>
   </div>
@@ -158,10 +162,19 @@ const variant: Variant = etape.statut === 'fait' ? 'done' : etape.statut === 'en
     margin: 0;
   }
 
-  .timeline-item__chambre {
+  .timeline-item__tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3xs);
+  }
+
+  .timeline-item__description {
     font-family: var(--font-body);
-    font-size: var(--text-body-xsmall);
+    font-size: var(--text-body-small);
+    font-weight: 400;
+    line-height: 20px;
     color: var(--color-text-dark-grey);
-    margin: 0;
+    margin: var(--space-4xs) 0 0;
   }
 </style>

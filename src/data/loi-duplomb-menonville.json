@@ -4,9 +4,9 @@
   "titre_officiel": "Loi visant à lever les contraintes à l'exercice du métier d'agriculteur",
   "numero_loi": "Loi n° 2025-794 du 11 août 2025",
   "reference_jo": "JO n° 186 du 12 août 2025",
-  "sous_titre": "Proposition de loi portée par les sénateurs Laurent Duplomb et Franck Menonville pour lever plusieurs contraintes réglementaires pesant sur l'agriculture française.",
-  "resume": "Déposée par les sénateurs Laurent Duplomb (LR) et Franck Menonville, cette loi assouplit les règles encadrant l'élevage, l'irrigation agricole et l'usage de certains pesticides. Son article le plus controversé, qui prévoyait la réintroduction encadrée de l'acétamipride (un insecticide néonicotinoïde interdit depuis 2018), a été censuré par le Conseil constitutionnel juste avant la promulgation.",
-  "description": "Portée par le sénateur et agriculteur Laurent Duplomb (Les Républicains) et son collègue Franck Menonville, cette proposition de loi vise à simplifier plusieurs procédures administratives pour les exploitations agricoles : autorisations pour la construction et l'agrandissement de bâtiments d'élevage, accès aux réserves d'eau pour l'irrigation, et conditions d'usage de certains produits phytosanitaires. Déposée fin 2024 dans un contexte de fortes mobilisations agricoles, elle a connu un parcours inhabituel : rejetée une première fois par l'Assemblée nationale, puis adoptée après un compromis trouvé en commission mixte paritaire. Une pétition citoyenne dénonçant en particulier la réintroduction envisagée de l'acétamipride, un pesticide interdit en France depuis 2018 pour son impact sur les pollinisateurs, a recueilli plus de 2,1 millions de signatures avant la promulgation.",
+  "sous_titre": "Les sénateurs Laurent Duplomb et Franck Menonville proposent cette loi pour simplifier les règles qui pèsent sur les agriculteurs.",
+  "resume": "Les sénateurs Laurent Duplomb (LR) et Franck Menonville proposent cette loi. Elle assouplit les règles sur l'élevage, l'irrigation agricole et l'usage de certains pesticides. Juste avant la promulgation, le Conseil constitutionnel supprime son article le plus controversé : il prévoyait de réintroduire l'acétamipride, un insecticide interdit en France depuis 2018.",
+  "description": "Les sénateurs Laurent Duplomb (Les Républicains), agriculteur de métier, et Franck Menonville déposent ce texte fin 2024, en pleine mobilisation agricole. La loi simplifie trois démarches : construire ou agrandir un bâtiment d'élevage, accéder à des réserves d'eau pour irriguer, et utiliser certains pesticides.\n\nSon parcours est mouvementé. L'Assemblée nationale rejette d'abord le texte. Un compromis en commission mixte paritaire permet ensuite son adoption. Avant la promulgation, une pétition citoyenne recueille plus de 2,1 millions de signatures — elle vise surtout la réintroduction envisagée de l'acétamipride, un pesticide interdit en France depuis 2018 pour son impact sur les abeilles et autres pollinisateurs.",
   "depose_par": [
     {
       "nom": "Laurent Duplomb",
@@ -29,7 +29,8 @@
       "date": "2024-11-01",
       "chambre": "senat",
       "type": "depot",
-      "libelle": "Dépôt de la proposition de loi n° 108 rectifié au Sénat",
+      "libelle": "Les sénateurs Duplomb et Menonville déposent leur texte au Sénat",
+      "description": "Le dépôt marque le début du parcours parlementaire d'un texte. Il est officiellement enregistré et peut ensuite être examiné en commission, puis en séance.",
       "statut": "fait",
       "source": "https://www.senat.fr/leg/ppl24-108.html"
     },
@@ -37,7 +38,8 @@
       "date": "2025-01-27",
       "chambre": "senat",
       "type": "vote_1",
-      "libelle": "Adoption en première lecture par le Sénat (texte n° 41)",
+      "libelle": "Le Sénat adopte le texte en première lecture",
+      "description": "En première lecture, chaque chambre examine et vote le texte à son tour. Le Sénat l'approuve, il passe maintenant à l'Assemblée nationale.",
       "statut": "fait",
       "source": "https://www.senat.fr/leg/tas24-041.html"
     },
@@ -45,7 +47,8 @@
       "date": "2025-01-28",
       "chambre": "assemblee_nationale",
       "type": "transmission",
-      "libelle": "Texte transmis à l'Assemblée nationale (n° 856)",
+      "libelle": "Le Sénat transmet le texte à l'Assemblée nationale",
+      "description": "Une loi doit être votée dans les mêmes termes par le Sénat et l'Assemblée nationale. Le texte adopté par les sénateurs est donc transmis aux députés.",
       "statut": "fait",
       "source": "http://www.assemblee-nationale.fr/17/dossiers/DLR5L17N50819.asp"
     },
@@ -53,7 +56,8 @@
       "date": "2025-05-26",
       "chambre": "assemblee_nationale",
       "type": "vote_1",
-      "libelle": "Texte rejeté en première lecture par l'Assemblée nationale (n° 120)",
+      "libelle": "L'Assemblée nationale rejette le texte en première lecture",
+      "description": "Les députés votent contre le texte. Faute d'accord entre les deux chambres, une nouvelle étape doit permettre de trouver un compromis.",
       "statut": "fait",
       "source": "https://www.assemblee-nationale.fr/dyn/17/textes/l17t0120_texte-adopte-seance"
     },
@@ -61,7 +65,8 @@
       "date": "2025-06-30",
       "chambre": "cmp",
       "type": "accord",
-      "libelle": "Accord trouvé en commission mixte paritaire (texte n° 800 rectifié)",
+      "libelle": "La commission mixte paritaire se met d'accord sur un texte commun",
+      "description": "La commission mixte paritaire réunit sept sénateurs et sept députés. Ensemble, ils rédigent une version du texte que les deux chambres peuvent accepter.",
       "statut": "fait",
       "source": "https://www.senat.fr/leg/ppl24-800.html"
     },
@@ -69,7 +74,8 @@
       "date": "2025-07-02",
       "chambre": "senat",
       "type": "vote_cmp",
-      "libelle": "Adoption du texte de compromis par le Sénat (texte n° 162)",
+      "libelle": "Le Sénat adopte le texte de compromis",
+      "description": "Le Sénat vote sur le texte de compromis trouvé en commission mixte paritaire. Les sénateurs l'adoptent.",
       "statut": "fait",
       "source": "https://www.senat.fr/leg/tas24-162.html"
     },
@@ -77,7 +83,8 @@
       "date": "2025-07-08",
       "chambre": "assemblee_nationale",
       "type": "vote_final",
-      "libelle": "Adoption définitive par l'Assemblée nationale (316 pour, 223 contre, 25 abstentions)",
+      "libelle": "L'Assemblée nationale adopte définitivement la loi",
+      "description": "L'Assemblée nationale vote une dernière fois sur le texte de compromis. Son adoption met fin au parcours parlementaire de la loi.",
       "statut": "fait",
       "source": "https://www.assemblee-nationale.fr/dyn/17/textes/l17t0162_texte-adopte-seance"
     },
@@ -85,7 +92,8 @@
       "date": "2025-08-07",
       "chambre": "conseil_constitutionnel",
       "type": "controle_constitutionnalite",
-      "libelle": "Décision partiellement conforme — censure de l'article réintroduisant l'acétamipride",
+      "libelle": "Le Conseil constitutionnel supprime l'article sur l'acétamipride",
+      "description": "Avant sa promulgation, une loi peut être vérifiée par le Conseil constitutionnel si des parlementaires le saisissent. Il supprime ici l'article qui prévoyait de réintroduire l'acétamipride.",
       "statut": "fait",
       "source": "https://www.conseil-constitutionnel.fr/decision/2025/2025891DC.htm"
     },
@@ -93,7 +101,8 @@
       "date": "2025-08-11",
       "chambre": "presidence",
       "type": "promulgation",
-      "libelle": "Promulgation de la loi n° 2025-794",
+      "libelle": "Le président de la République promulgue la loi",
+      "description": "La promulgation rend la loi officielle. Le président de la République signe le texte, qui est ensuite publié au Journal officiel.",
       "statut": "fait",
       "source": "http://www.legifrance.gouv.fr/UnTexteDeJorf.do?numjo=AGRX2502679L"
     }
@@ -110,14 +119,32 @@
     }
   ],
   "arguments_pour": [
-    "Simplifie des démarches administratives jugées trop lourdes par les exploitants agricoles",
-    "Facilite la construction de réserves d'eau pour sécuriser l'irrigation face aux sécheresses",
-    "Vise à réduire l'écart de compétitivité avec des agriculteurs européens soumis à moins de contraintes réglementaires"
+    {
+      "titre": "📋 Moins de démarches administratives",
+      "description": "Simplifie des démarches administratives jugées trop lourdes par les exploitants agricoles"
+    },
+    {
+      "titre": "💧 Plus de réserves d'eau pour irriguer",
+      "description": "Facilite la construction de réserves d'eau pour sécuriser l'irrigation face aux sécheresses"
+    },
+    {
+      "titre": "🇪🇺 Des règles alignées sur l'Europe",
+      "description": "Rapproche les règles françaises de celles des autres pays européens, moins strictes"
+    }
   ],
   "arguments_contre": [
-    "L'article sur l'acétamipride menaçait la biodiversité, en particulier les insectes pollinisateurs",
-    "Risques pour la santé humaine évoqués par le Conseil constitutionnel concernant certains pesticides néonicotinoïdes",
-    "Procédure d'adoption jugée précipitée par une partie des parlementaires et de la société civile, malgré un premier rejet à l'Assemblée nationale"
+    {
+      "titre": "🐝 Une menace pour les pollinisateurs",
+      "description": "L'article sur l'acétamipride menaçait la biodiversité, en particulier les insectes pollinisateurs"
+    },
+    {
+      "titre": "⚕️ Un risque pour la santé humaine",
+      "description": "Le Conseil constitutionnel évoque un risque pour la santé humaine lié à l'acétamipride"
+    },
+    {
+      "titre": "⏱️ Une procédure jugée trop rapide",
+      "description": "Une partie des parlementaires et de la société civile juge la procédure trop rapide, malgré le rejet initial à l'Assemblée nationale"
+    }
   ],
   "sources": [
     {

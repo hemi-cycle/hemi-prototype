@@ -4,6 +4,9 @@
   --color-brand-default: #3d2aff;
   --color-brand-darker: #241d86;
   --color-brand-lighter: #99a3f5;
+  --color-brand-light: color-mix(in srgb, #99a3f5 35%, white);
+  --color-brand-light-border: color-mix(in srgb, #99a3f5 55%, white);
+  --color-brand-on-light: #241d86;
   --color-brand-on-darker: #cad1fb;
 
   /* Couleurs — neutre */

@@ -1,0 +1,191 @@
+---
+// Barre de proportion Pour/Contre — complément à HemicycleChartV2 (1 point = 1 siège),
+// pensé pour une lecture plus rapide du rapport de force : Pour ancré à gauche, Contre
+// ancré à droite (l'espace restant au milieu = abstentions + non-votants), avec un
+// repère vertical rouge sur le seuil de majorité (même calcul que `seuilMajorite` dans
+// loi/[id].astro, dupliqué ici comme le reste du module Votes & Hémicycle — voir le
+// commentaire de HemicycleChartV2 sur l'absence de recalcul de layout au clic).
+import type { VoteStep } from '../data/votes-mock';
+
+interface Props {
+  votes: VoteStep[];
+  activeVoteId: string;
+}
+
+const { votes, activeVoteId } = Astro.props;
+
+const activeVote = votes.find((v) => v.id === activeVoteId) ?? votes[votes.length - 1];
+
+function seuilMajorite(totalSieges: number) {
+  return Math.floor(totalSieges / 2) + 1;
+}
+
+const pourPct = (activeVote.pour / activeVote.totalSieges) * 100;
+const contrePct = (activeVote.contre / activeVote.totalSieges) * 100;
+const majorityPct = (seuilMajorite(activeVote.totalSieges) / activeVote.totalSieges) * 100;
+const neutre = activeVote.abstention + activeVote.nonVotant;
+---
+
+<div class="majority-bar">
+  <p class="majority-bar__title">Majorité absolue</p>
+
+  <div class="majority-bar__track-wrapper">
+    <div class="majority-bar__track">
+      <div class="majority-bar__segment majority-bar__segment--pour" id="majority-bar-pour" style={`width:${pourPct}%`}></div>
+      <div class="majority-bar__segment majority-bar__segment--contre" id="majority-bar-contre" style={`width:${contrePct}%`}></div>
+    </div>
+    <div class="majority-bar__marker" id="majority-bar-marker" style={`left:${majorityPct}%`}></div>
+  </div>
+
+  <div class="majority-bar__labels">
+    <div class="majority-bar__label majority-bar__label--pour">
+      <span class="majority-bar__dot"></span>
+      Pour <strong id="majority-bar-pour-value">{activeVote.pour}</strong>
+    </div>
+    <div class="majority-bar__label majority-bar__label--contre">
+      Contre <strong id="majority-bar-contre-value">{activeVote.contre}</strong>
+      <span class="majority-bar__dot"></span>
+    </div>
+  </div>
+
+  <div class="majority-bar__label majority-bar__label--neutre">
+    <span class="majority-bar__dot"></span>
+    Abstentions · non-votants <strong id="majority-bar-neutre-value">{neutre}</strong>
+  </div>
+</div>
+
+<style>
+  .majority-bar {
+    /* box-sizing:border-box requis : aucun reset global box-sizing dans le projet
+       (comportement par défaut du navigateur), donc width:100% + padding dépassait
+       sinon la largeur du parent — même piège que .hemicycle-v2__chart, voir
+       HemicycleChartV2.astro. */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+    width: 100%;
+    padding: var(--space-sm);
+    background: white;
+    border: 1px solid white;
+    border-radius: var(--radius-small);
+  }
+
+  .majority-bar__title {
+    margin: 0;
+    text-align: center;
+    font-family: var(--font-body);
+    font-size: var(--text-body-xsmall);
+    font-weight: 500;
+    color: var(--color-text-default);
+  }
+
+  .majority-bar__track-wrapper {
+    position: relative;
+    width: 100%;
+  }
+
+  .majority-bar__track {
+    position: relative;
+    width: 100%;
+    height: 24px;
+    border-radius: var(--radius-small);
+    background: var(--color-bg-neutral-tertiary);
+    overflow: hidden;
+  }
+
+  .majority-bar__segment {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    transition: width 0.2s ease;
+  }
+
+  .majority-bar__segment--pour {
+    left: 0;
+    right: auto;
+    background-color: var(--color-success-on-light);
+    /* Texture — canal accessibilité daltonisme (dataviz skill, "Texture fill") :
+       hachures diagonales 45°/135° tone-on-tone (noir en surimpression, pas une
+       nouvelle teinte), même "loudness" (opacité) des deux côtés — l'orientation
+       seule doit suffire à distinguer Pour de Contre, même en niveaux de gris. */
+    background-image: repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.18) 0, rgba(0, 0, 0, 0.18) 2px, transparent 2px, transparent 8px);
+    border-radius: var(--radius-small) 0 0 var(--radius-small);
+  }
+
+  .majority-bar__segment--contre {
+    right: 0;
+    left: auto;
+    background-color: var(--color-error-on-light);
+    background-image: repeating-linear-gradient(135deg, rgba(0, 0, 0, 0.18) 0, rgba(0, 0, 0, 0.18) 2px, transparent 2px, transparent 8px);
+    border-radius: 0 var(--radius-small) var(--radius-small) 0;
+  }
+
+  .majority-bar__marker {
+    position: absolute;
+    top: -8px;
+    bottom: -8px;
+    width: 3px;
+    transform: translateX(-50%);
+    background: var(--color-text-default);
+    border-radius: var(--radius-full);
+    box-shadow: 0 0 0 2px white;
+  }
+
+  .majority-bar__labels {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2xs);
+    font-family: var(--font-body);
+    font-size: var(--text-body-small);
+    color: var(--color-text-default);
+  }
+
+  .majority-bar__label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4xs);
+  }
+
+  .majority-bar__label--pour strong {
+    color: var(--color-success-on-light);
+  }
+
+  .majority-bar__label--contre strong {
+    color: var(--color-error-on-light);
+  }
+
+  .majority-bar__label--neutre {
+    justify-content: center;
+    font-size: var(--text-body-xsmall);
+    color: var(--color-text-dark-grey);
+  }
+
+  .majority-bar__label--neutre strong {
+    color: var(--color-text-dark-grey);
+  }
+
+  .majority-bar__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-full);
+    flex-shrink: 0;
+  }
+
+  .majority-bar__label--pour .majority-bar__dot {
+    background-color: var(--color-success-on-light);
+    /* Même hachure que les segments de la barre (identité par orientation, pas
+       seulement par couleur) — période resserrée pour rester lisible sur 8px. */
+    background-image: repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.18) 0, rgba(0, 0, 0, 0.18) 1px, transparent 1px, transparent 3px);
+  }
+
+  .majority-bar__label--contre .majority-bar__dot {
+    background-color: var(--color-error-on-light);
+    background-image: repeating-linear-gradient(135deg, rgba(0, 0, 0, 0.18) 0, rgba(0, 0, 0, 0.18) 1px, transparent 1px, transparent 3px);
+  }
+
+  .majority-bar__label--neutre .majority-bar__dot {
+    background: var(--color-bg-neutral-tertiary);
+  }
+</style>

@@ -2,6 +2,7 @@
 import MobileLayout from '../layouts/MobileLayout.astro';
 import LawList from '../components/LawList.astro';
 import loi from '../data/loi-duplomb-menonville.json';
+import loiDuplombThumbnail from '../assets/lois/loi-duplomb-menonville.png';
 
 const premierDeposant = loi.depose_par[0];
 
@@ -14,6 +15,7 @@ const laws = [
     deposantNom: premierDeposant.nom,
     deposantRole: `${premierDeposant.fonction} · ${premierDeposant.parti}`,
     partiNom: premierDeposant.parti,
+    imageSrc: loiDuplombThumbnail,
   },
 ];
 ---

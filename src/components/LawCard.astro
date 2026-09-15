@@ -14,9 +14,10 @@ interface Props {
   deposantNom: string;
   deposantRole: string;
   partiNom: string;
+  imageSrc?: ImageMetadata;
 }
 
-const { id, titre, sousTitre, statut, deposantNom, deposantRole, partiNom } = Astro.props;
+const { id, titre, sousTitre, statut, deposantNom, deposantRole, partiNom, imageSrc } = Astro.props;
 
 const tags = [
   { label: 'Agriculture', icon: 'plant' },
@@ -25,13 +26,22 @@ const tags = [
 ---
 
 <a href={`${import.meta.env.BASE_URL}/loi/${id}`} class="law-card">
+  {imageSrc && (
+    <div class="thumbnail">
+      <img src={imageSrc.src} alt="" />
+      <div class="thumbnail__state">
+        <LawStateTag statut={statut} />
+      </div>
+    </div>
+  )}
+
   <div class="header">
     <div class="title-block">
       <h2 class="title">{titre}</h2>
       <p class="subtitle">{sousTitre}</p>
     </div>
     <div class="theme-wrapper">
-      <LawStateTag statut={statut} />
+      {!imageSrc && <LawStateTag statut={statut} />}
       {tags.map((tag) => <Tag label={tag.label} leading="icon" icon={tag.icon} />)}
     </div>
   </div>
@@ -60,6 +70,25 @@ const tags = [
     border-radius: var(--radius-small);
     box-shadow: var(--elevation-3);
     overflow: hidden;
+  }
+
+  .thumbnail {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 358 / 180;
+  }
+
+  .thumbnail img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .thumbnail__state {
+    position: absolute;
+    left: var(--space-xs);
+    bottom: var(--space-xs);
   }
 
   .header {

@@ -13,6 +13,7 @@ interface LawSummary {
   deposantNom: string;
   deposantRole: string;
   partiNom: string;
+  imageSrc?: ImageMetadata;
 }
 
 interface Props {
@@ -39,6 +40,7 @@ const filters = ['Tous', 'Agriculture', 'Écologie'];
         deposantNom={loi.deposantNom}
         deposantRole={loi.deposantRole}
         partiNom={loi.partiNom}
+        imageSrc={loi.imageSrc}
       />
     ))}
   </div>
