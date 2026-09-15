@@ -6,9 +6,14 @@
 // Le thème "on-dark" (fond overlay-light-20, texte blanc) correspond à l'usage dans
 // le "Chart Container" brand-darker du node 2583:18130 ; "on-light" (défaut) à
 // l'usage sur les cartes claires du reste de la page.
-export type KeyNumberState = 'default' | 'success' | 'failure';
+export type KeyNumberState = 'default' | 'success' | 'failure' | 'warning';
 export type KeyNumberSize = 'compact' | 'comfortable';
 export type KeyNumberTheme = 'on-light' | 'on-dark';
+// Formes reprises des swatches de l'ancienne légende hemicycle-v2__legend (retirée) :
+// même code couleur/forme que les points de l'hémicycle (pour=cercle, contre=carré,
+// abstention=triangle), pour que le "dot" fasse office de légende directement dans
+// le footer plutôt que dans une liste séparée sous le graphique.
+export type KeyNumberDotShape = 'circle' | 'square' | 'triangle';
 
 interface Props {
   value: number | string;
@@ -17,27 +22,35 @@ interface Props {
   size?: KeyNumberSize;
   theme?: KeyNumberTheme;
   valueId?: string;
+  dotShape?: KeyNumberDotShape;
 }
 
-const { value, label, state = 'default', size = 'compact', theme = 'on-light', valueId } = Astro.props;
+const { value, label, state = 'default', size = 'compact', theme = 'on-light', valueId, dotShape } = Astro.props;
 
 const stateColor: Record<KeyNumberTheme, Record<KeyNumberState, string>> = {
   'on-light': {
     default: 'var(--color-text-default)',
     success: 'var(--color-success-on-light)',
     failure: 'var(--color-error-on-light)',
+    warning: 'var(--color-warning-on-light)',
   },
   'on-dark': {
     default: 'var(--color-text-white)',
     success: 'var(--color-success-on-dark)',
     failure: 'var(--color-error-on-dark)',
+    warning: 'var(--color-warning-on-dark)',
   },
 };
 ---
 
 <div class={`key-number key-number--${size} key-number--${theme}`}>
   <p class="key-number__value" id={valueId} style={`color:${stateColor[theme][state]}`}>{value}</p>
-  <p class="key-number__label">{label}</p>
+  <p class="key-number__label">
+    {dotShape && (
+      <span class={`key-number__dot key-number__dot--${dotShape}`} style={`background:${stateColor[theme][state]}`} aria-hidden="true"></span>
+    )}
+    {label}
+  </p>
 </div>
 
 <style>
@@ -85,10 +98,28 @@ const stateColor: Record<KeyNumberTheme, Record<KeyNumberState, string>> = {
   }
 
   .key-number__label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-4xs);
     font-family: var(--font-body);
     font-size: var(--text-body-xsmall);
     color: var(--color-text-default);
     text-transform: uppercase;
     margin: 0;
+  }
+
+  .key-number__dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    flex-shrink: 0;
+  }
+
+  .key-number__dot--circle {
+    border-radius: 50%;
+  }
+
+  .key-number__dot--triangle {
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
   }
 </style>

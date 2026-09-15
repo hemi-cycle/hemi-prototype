@@ -74,6 +74,15 @@ const items = etapes
   ))}
 </div>
 
+<script>
+  // Le vote actif par défaut (activeVoteId, voir loi/[id].astro) est le DERNIER de la
+  // liste — sans ce scroll initial, la timeline s'ouvre scrollée tout à gauche (Vote 1)
+  // alors que la carte hémicycle/footer en dessous affiche déjà les données du dernier
+  // vote : incohérence entre ce qui est sélectionné et ce qui est visible.
+  const activeItem = document.querySelector<HTMLButtonElement>('.vote-timeline-toggle[data-active="true"]');
+  activeItem?.scrollIntoView({ inline: 'end', block: 'nearest' });
+</script>
+
 <style>
   .votes-timeline {
     display: flex;

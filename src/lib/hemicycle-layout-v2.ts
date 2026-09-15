@@ -5,7 +5,8 @@
 // on découpe cet ordre en 4 tranches contiguës (pour | abstention | non-votant |
 // contre). Résultat : un bloc plein par catégorie (comme sur une vraie photo
 // d'hémicycle) plutôt que des paliers/anneaux à chaque rangée. Ne remplace pas
-// hemicycle-layout.ts — les deux coexistent pour comparaison (voir HemicycleChartV2).
+// hemicycle-layout.ts, dont ce module réutilise generateRows/DOT_SIZE (voir
+// HemicycleChartV2.astro).
 import { DOT_SIZE, generateRows, type HemicycleLayout, type HemicyclePoint, type VoteCategory, type VoteCounts } from './hemicycle-layout';
 
 export { DOT_SIZE };
@@ -47,9 +48,16 @@ export function generateHemicycleLayoutV2(total: number, counts: VoteCounts): He
   const outerRadius = rows[rows.length - 1]?.radius ?? 40;
 
   const width = 2 * (outerRadius + DOT_SIZE / 2);
-  const height = outerRadius + DOT_SIZE / 2;
+  // centerY (où sin(angle)=0, aux extrémités gauche/droite de chaque rangée) doit
+  // rester à outerRadius + DOT_SIZE/2 du haut du viewBox. La hauteur du SVG doit en
+  // plus loger la moitié inférieure de ces points, +1 de marge : le point ".dot" en
+  // "non-votant" a un stroke-width:1 dessiné à cheval sur le bord du rect, donc 0.5px
+  // dépasse déjà du rayon DOT_SIZE/2 nominal. Sans cette marge, ce stroke se faisait
+  // rogner pile sur le bord inférieur du viewBox (visible comme un léger "cut" de la
+  // dernière rangée).
+  const centerY = outerRadius + DOT_SIZE / 2;
+  const height = centerY + DOT_SIZE / 2 + 1;
   const centerX = width / 2;
-  const centerY = height;
 
   const categories = categorizeSeatsByWedge(total, counts);
   const points: HemicyclePoint[] = [];

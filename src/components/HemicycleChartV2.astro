@@ -1,13 +1,13 @@
 ---
-// Expérimentation "V2" du dataviz hémicycle, posée AU-DESSUS de HemicycleChart.astro
-// pour comparaison (voir CLAUDE.md discussion) — ne remplace rien. Toujours 1 point =
-// 1 siège réel, mais deux différences avec la V1 :
+// Dataviz hémicycle — anciennement "V2" comparée à HemicycleChart.astro (retirée,
+// voir CLAUDE.md discussion), c'est maintenant l'unique implémentation. Toujours
+// 1 point = 1 siège réel. Deux partis pris hérités de cette comparaison :
 // 1. Assignation des catégories par balayage global gauche->droite (hemicycle-layout-v2.ts)
 //    au lieu d'une répartition proportionnelle rangée par rangée : donne un bloc plein
 //    par catégorie, plus proche d'une vraie photo d'hémicycle.
-// 2. Ajoute ce qui manquait à la V1 côté lisibilité : une légende (obligatoire dès
-//    qu'il y a >= 2 séries) et un <title> par point pour un tooltip natif au survol —
-//    "1 point = 1 siège" doit être inspectable, pas seulement décoratif.
+// 2. Une légende (obligatoire dès qu'il y a >= 2 séries) et un <title> par point pour
+//    un tooltip natif au survol — "1 point = 1 siège" doit être inspectable, pas
+//    seulement décoratif.
 import type { VoteStep } from '../data/votes-mock';
 import { generateHemicycleLayoutV2 } from '../lib/hemicycle-layout-v2';
 import { DOT_SIZE } from '../lib/hemicycle-layout';
@@ -20,10 +20,6 @@ interface Props {
 const { votes, activeVoteId } = Astro.props;
 
 const activeVote = votes.find((v) => v.id === activeVoteId) ?? votes[votes.length - 1];
-
-function seuilMajorite(totalSieges: number) {
-  return Math.floor(totalSieges / 2) + 1;
-}
 
 const byChambre = new Map<string, VoteStep[]>();
 for (const vote of votes) {
@@ -38,19 +34,20 @@ const chambreCharts = Array.from(byChambre.entries()).map(([chambre, steps]) => 
   return { chambre, layout, isActive };
 });
 
-const legendItems = [
-  { category: 'pour', label: 'Pour', count: activeVote.pour },
-  { category: 'contre', label: 'Contre', count: activeVote.contre },
-  { category: 'abstention', label: 'Abstention', count: activeVote.abstention },
-  { category: 'non-votant', label: 'Non-votant', count: activeVote.nonVotant },
-] as const;
+// AN (577 sièges) et Sénat (348) ont des viewBox de tailles différentes (rayon
+// extérieur différent). Sans ça, chaque <svg> gardait son propre ratio via
+// height:auto et le conteneur changeait de hauteur au clic sur un vote d'une autre
+// chambre (la carte "sautait" verticalement). On réserve donc la hauteur de la PLUS
+// GRANDE chambre (toujours l'AN dans ce jeu de données) pour les deux <svg> : le plus
+// petit hémicycle (Sénat) est alors juste légèrement "lettreboxé" par
+// preserveAspectRatio au lieu de forcer une hauteur de carte différente.
+const chartMaxWidth = Math.max(...chambreCharts.map((chart) => chart.layout.width));
+const chartMaxHeight = Math.max(...chambreCharts.map((chart) => chart.layout.height));
 ---
 
 <div class="hemicycle-v2">
-  <p class="hemicycle-v2__label">V2 — balayage global (expérimentation)</p>
-
   <div class="hemicycle-v2__stack">
-    <div class="hemicycle-v2__chart">
+    <div class="hemicycle-v2__chart" style={`aspect-ratio: ${chartMaxWidth} / ${chartMaxHeight};`}>
     {chambreCharts.map((chart) => (
       <svg
         class="hemicycle-v2__svg"
@@ -82,18 +79,8 @@ const legendItems = [
     <div class="hemicycle-v2__center-label">
       <p class="hemicycle-v2__seats" id="hemicycle-v2-seats">{activeVote.totalSieges}</p>
       <p class="hemicycle-v2__caption">sièges</p>
-      <p class="hemicycle-v2__majority" id="hemicycle-v2-majority">Majorité à {seuilMajorite(activeVote.totalSieges)}</p>
     </div>
   </div>
-
-  <ul class="hemicycle-v2__legend" id="hemicycle-v2-legend">
-    {legendItems.map((item) => (
-      <li class="hemicycle-v2__legend-item">
-        <span class={`hemicycle-v2__legend-swatch hemicycle-v2__legend-swatch--${item.category}`} aria-hidden="true"></span>
-        <span class="hemicycle-v2__legend-text">{item.label} <strong data-vote-count={item.category}>{item.count}</strong></span>
-      </li>
-    ))}
-  </ul>
 </div>
 
 <style>
@@ -102,16 +89,6 @@ const legendItems = [
     flex-direction: column;
     width: 100%;
     gap: var(--space-2xs);
-  }
-
-  .hemicycle-v2__label {
-    font-family: var(--font-body);
-    font-size: var(--text-body-xsmall);
-    font-weight: 500;
-    color: var(--color-text-white);
-    opacity: 0.7;
-    margin: 0;
-    text-align: center;
   }
 
   .hemicycle-v2__stack {
@@ -137,13 +114,18 @@ const legendItems = [
        que son parent .hemicycle-v2__stack, d'où le padding "sans effet" et le
        dataviz qui débordait de la carte. */
     padding: var(--space-sm);
+    padding-bottom: 0;
   }
 
   .hemicycle-v2__svg {
     display: block;
     width: 100%;
     max-width: 100%;
-    height: auto;
+    /* height:100% (au lieu de auto) + aspect-ratio fixe sur .hemicycle-v2__chart
+       (voir le style inline posé depuis le frontmatter) : chaque <svg> garde son
+       propre viewBox/ratio interne (via preserveAspectRatio par défaut), mais le
+       conteneur, lui, ne change plus de hauteur selon la chambre active. */
+    height: 100%;
     min-width: 0;
   }
 
@@ -178,7 +160,8 @@ const legendItems = [
     flex-direction: column;
     align-items: center;
     text-align: center;
-    padding: 0 var(--space-sm) var(--space-sm);
+    padding: 0 var(--space-sm) 10px;
+    margin-top: -30px;
   }
 
   .hemicycle-v2__seats {
@@ -196,63 +179,4 @@ const legendItems = [
     margin: 0;
   }
 
-  .hemicycle-v2__majority {
-    font-family: var(--font-body);
-    font-size: var(--text-body-xsmall);
-    color: var(--color-text-dark-grey);
-    margin: var(--space-4xs) 0 0;
-  }
-
-  .hemicycle-v2__legend {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: var(--space-2xs) var(--space-sm);
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .hemicycle-v2__legend-item {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-4xs);
-  }
-
-  .hemicycle-v2__legend-swatch {
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    flex-shrink: 0;
-  }
-
-  .hemicycle-v2__legend-swatch--pour {
-    background: var(--color-success-on-light);
-    border-radius: 50%;
-  }
-
-  .hemicycle-v2__legend-swatch--contre {
-    background: var(--color-error-on-light);
-  }
-
-  .hemicycle-v2__legend-swatch--abstention {
-    background: var(--color-warning-on-light);
-    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-  }
-
-  .hemicycle-v2__legend-swatch--non-votant {
-    background: white;
-    border: 1px solid var(--color-border-neutral-secondary);
-    border-radius: 50%;
-  }
-
-  .hemicycle-v2__legend-text {
-    font-family: var(--font-body);
-    font-size: var(--text-body-xsmall);
-    color: var(--color-text-white);
-  }
-
-  .hemicycle-v2__legend-text strong {
-    font-weight: 700;
-  }
 </style>

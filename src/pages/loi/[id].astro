@@ -19,7 +19,6 @@ import KeyNumber from '../../components/KeyNumber.astro';
 import WikiLink from '../../components/WikiLink.astro';
 import Timeline from '../../components/Timeline.astro';
 import VotesTimeline from '../../components/VotesTimeline.astro';
-import HemicycleChart from '../../components/HemicycleChart.astro';
 import HemicycleChartV2 from '../../components/HemicycleChartV2.astro';
 import loi from '../../data/loi-duplomb-menonville.json';
 import { votesMock } from '../../data/votes-mock';
@@ -34,6 +33,10 @@ const chambreLabels: Record<string, string> = {
   senat: 'Sénat',
   assemblee_nationale: 'Assemblée nationale',
 };
+
+function seuilMajorite(totalSieges: number) {
+  return Math.floor(totalSieges / 2) + 1;
+}
 
 // Vote actif par défaut à l'affichage : le dernier de la liste (ici la seule donnée
 // réellement sourcée — voir "MD plans/Hemi_Plan_Votes_Hemicycle.md" §1).
@@ -99,27 +102,31 @@ const activeVote = votesMock[votesMock.length - 1];
 
     <section class="votes-card">
       <VotesTimeline etapes={loi.etapes} votes={votesMock} activeVoteId={activeVote.id} />
-      <HemicycleChartV2 votes={votesMock} activeVoteId={activeVote.id} />
-      <HemicycleChart votes={votesMock} activeVoteId={activeVote.id} />
 
-      <div class="votes-footer">
-        <div class="votes-footer__title">
-          <p id="vote-chambre-title">{chambreLabels[activeVote.chambre]}</p>
+      <div class="votes-result">
+        <HemicycleChartV2 votes={votesMock} activeVoteId={activeVote.id} />
+
+        <div class="votes-footer">
+          <div class="votes-footer__title">
+            <p id="vote-chambre-title">{chambreLabels[activeVote.chambre]}</p>
+            <p id="vote-majority" class="votes-footer__majority">Majorité à {seuilMajorite(activeVote.totalSieges)}</p>
+          </div>
+          <div class="votes-footer__numbers">
+            <KeyNumber theme="on-dark" valueId="vote-pour" value={activeVote.pour} label="Pour" state="success" dotShape="circle" />
+            <KeyNumber theme="on-dark" valueId="vote-contre" value={activeVote.contre} label="Contre" state="failure" dotShape="square" />
+            <KeyNumber theme="on-dark" valueId="vote-abstention" value={activeVote.abstention} label="Abstentions" state="warning" dotShape="triangle" />
+            <KeyNumber theme="on-dark" valueId="vote-non-votant" value={activeVote.nonVotant} label="Non-votants" dotShape="circle" />
+          </div>
+          <a
+            href={activeVote.source || undefined}
+            target={activeVote.source ? '_blank' : undefined}
+            rel={activeVote.source ? 'noopener noreferrer' : undefined}
+            class="votes-footer__button"
+            id="vote-source"
+          >
+            {activeVote.source ? 'Voir + en détails' : 'Donnée provisoire — à confirmer'}
+          </a>
         </div>
-        <div class="votes-footer__numbers">
-          <KeyNumber theme="on-dark" valueId="vote-pour" value={activeVote.pour} label="Pour" state={activeVote.pour > activeVote.contre ? 'success' : 'default'} />
-          <KeyNumber theme="on-dark" valueId="vote-contre" value={activeVote.contre} label="Contre" state={activeVote.contre > activeVote.pour ? 'failure' : 'default'} />
-          <KeyNumber theme="on-dark" valueId="vote-abstention" value={activeVote.abstention} label="Abstentions" />
-        </div>
-        <a
-          href={activeVote.source || undefined}
-          target={activeVote.source ? '_blank' : undefined}
-          rel={activeVote.source ? 'noopener noreferrer' : undefined}
-          class="votes-footer__button"
-          id="vote-source"
-        >
-          {activeVote.source ? 'Voir + en détails' : 'Donnée provisoire — à confirmer'}
-        </a>
       </div>
 
       <WikiLink question="Combien faut-il de votes pour qu'une loi passe ?" href={`${base}/antiseche`} />
@@ -154,11 +161,10 @@ const activeVote = votesMock[votesMock.length - 1];
 <script>
   // Seul endroit du prototype qui nécessite du JS côté client — voir
   // "MD plans/Hemi_Plan_Votes_Hemicycle.md" §6. La géométrie des points de
-  // l'hémicycle est calculée une fois au build (voir HemicycleChart.astro) ; ce
+  // l'hémicycle est calculée une fois au build (voir HemicycleChartV2.astro) ; ce
   // script se contente, au clic sur une étape de VotesTimeline, de changer
   // l'attribut `data-vote` des points déjà positionnés et de mettre à jour les
   // textes (chart label, footer "Résultat du vote"). Pas de recalcul de layout.
-  import { categorizeSeats } from '../../lib/hemicycle-layout';
   import { categorizeSeatsByWedge } from '../../lib/hemicycle-layout-v2';
 
   const chambreLabels: Record<string, string> = {
@@ -171,22 +177,14 @@ const activeVote = votesMock[votesMock.length - 1];
   }
 
   const timelineItems = document.querySelectorAll<HTMLButtonElement>('.vote-timeline-toggle');
-  const svgs = document.querySelectorAll<SVGSVGElement>('.hemicycle__svg');
-  const seatsLabel = document.getElementById('hemicycle-seats');
-  const majorityLabel = document.getElementById('hemicycle-majority');
-  const summary = document.getElementById('hemicycle-summary');
   const chambreTitle = document.getElementById('vote-chambre-title');
-  // V2 (expérimentation, HemicycleChartV2.astro) : mêmes bascules chambre/labels que
-  // la V1 ci-dessus, mais catégorisation via l'algo "balayage global" (voir
-  // hemicycle-layout-v2.ts), donc une boucle séparée plutôt que de réutiliser celle
-  // de la V1.
+  const voteMajority = document.getElementById('vote-majority');
   const svgsV2 = document.querySelectorAll<SVGSVGElement>('.hemicycle-v2__svg');
   const seatsLabelV2 = document.getElementById('hemicycle-v2-seats');
-  const majorityLabelV2 = document.getElementById('hemicycle-v2-majority');
-  const legendV2 = document.getElementById('hemicycle-v2-legend');
   const votePour = document.getElementById('vote-pour');
   const voteContre = document.getElementById('vote-contre');
   const voteAbstention = document.getElementById('vote-abstention');
+  const voteNonVotant = document.getElementById('vote-non-votant');
   const voteSource = document.getElementById('vote-source') as HTMLAnchorElement | null;
 
   timelineItems.forEach((item) => {
@@ -204,26 +202,9 @@ const activeVote = votesMock[votesMock.length - 1];
         other.dataset.active = other === item ? 'true' : 'false';
       });
 
-      svgs.forEach((svg) => {
-        const isMatch = svg.dataset.chambre === chambre;
-        svg.hidden = !isMatch;
-        if (isMatch) {
-          const categories = categorizeSeats(total, counts);
-          svg.querySelectorAll<SVGRectElement>('.hemicycle__dot').forEach((dot, index) => {
-            dot.setAttribute('data-vote', categories[index]);
-          });
-        }
-      });
-
-      if (seatsLabel) seatsLabel.textContent = String(total);
-      if (majorityLabel) majorityLabel.textContent = `Majorité à ${seuilMajorite(total)}`;
-      if (summary) {
-        summary.textContent = `${counts.pour} pour, ${counts.contre} contre, ${counts.abstention} abstentions sur ${total} sièges.`;
-      }
-
       svgsV2.forEach((svg) => {
         const isMatch = svg.dataset.chambre === chambre;
-        svg.hidden = !isMatch;
+        svg.toggleAttribute('hidden', !isMatch);
         if (isMatch) {
           const categoriesV2 = categorizeSeatsByWedge(total, counts);
           svg.setAttribute(
@@ -240,31 +221,14 @@ const activeVote = votesMock[votesMock.length - 1];
       });
 
       if (seatsLabelV2) seatsLabelV2.textContent = String(total);
-      if (majorityLabelV2) majorityLabelV2.textContent = `Majorité à ${seuilMajorite(total)}`;
-      if (legendV2) {
-        const counters: Record<string, number> = {
-          pour: counts.pour,
-          contre: counts.contre,
-          abstention: counts.abstention,
-          'non-votant': counts.nonVotant,
-        };
-        legendV2.querySelectorAll<HTMLElement>('[data-vote-count]').forEach((el) => {
-          const key = el.dataset.voteCount ?? '';
-          if (key in counters) el.textContent = String(counters[key]);
-        });
-      }
 
       if (chambreTitle) chambreTitle.textContent = chambreLabels[chambre] ?? chambre;
+      if (voteMajority) voteMajority.textContent = `Majorité à ${seuilMajorite(total)}`;
 
-      if (votePour) {
-        votePour.textContent = String(counts.pour);
-        votePour.style.color = counts.pour > counts.contre ? 'var(--color-success-on-dark)' : 'var(--color-text-white)';
-      }
-      if (voteContre) {
-        voteContre.textContent = String(counts.contre);
-        voteContre.style.color = counts.contre > counts.pour ? 'var(--color-error-on-dark)' : 'var(--color-text-white)';
-      }
+      if (votePour) votePour.textContent = String(counts.pour);
+      if (voteContre) voteContre.textContent = String(counts.contre);
       if (voteAbstention) voteAbstention.textContent = String(counts.abstention);
+      if (voteNonVotant) voteNonVotant.textContent = String(counts.nonVotant);
 
       if (voteSource) {
         if (source) {
@@ -506,6 +470,12 @@ const activeVote = votesMock[votesMock.length - 1];
     padding: var(--space-xl) var(--space-xs);
   }
 
+  .votes-result {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
   .votes-footer {
     display: flex;
     flex-direction: column;
@@ -516,11 +486,12 @@ const activeVote = votesMock[votesMock.length - 1];
 
   .votes-footer__title {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     width: 100%;
     min-width: 0;
-    padding: var(--space-4xs) var(--space-3xs);
+    padding: var(--space-4xs) 0;
     background: var(--color-overlay-light-20);
     border: 0.5px solid var(--color-brand-darker);
     border-radius: var(--radius-extra-small);
@@ -541,9 +512,16 @@ const activeVote = votesMock[votesMock.length - 1];
     text-overflow: ellipsis;
   }
 
+  .votes-footer__title p.votes-footer__majority {
+    font-family: var(--font-body);
+    font-size: var(--text-body-xsmall);
+    font-weight: 400;
+    opacity: 0.7;
+  }
+
   .votes-footer__numbers {
-    display: flex;
-    align-items: center;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 1px;
     width: 100%;
   }
